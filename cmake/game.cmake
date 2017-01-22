@@ -3,7 +3,7 @@ set (GAME_SOURCE
 )
 
 set (GAME_LIBS
-	glfw3
+	glfw
 	OpenSimplexNoise
 	GLEW
 )
