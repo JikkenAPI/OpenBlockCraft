@@ -1,3 +1,5 @@
+# Note: Modified Jan 22, 2017
+# Removed FOLDER
 
 set(common_HEADERS internal.h
                    "${GLFW_BINARY_DIR}/src/glfw_config.h"
@@ -58,7 +60,8 @@ set_target_properties(glfw PROPERTIES
                       VERSION ${GLFW_VERSION}
                       SOVERSION ${GLFW_VERSION_MAJOR}
                       POSITION_INDEPENDENT_CODE ON
-                      FOLDER "GLFW3")
+                      #FOLDER "GLFW3")
+					  )
 
 target_compile_definitions(glfw PRIVATE -D_GLFW_USE_CONFIG_H)
 target_include_directories(glfw PUBLIC
