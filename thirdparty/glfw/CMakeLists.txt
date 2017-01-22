@@ -49,7 +49,7 @@ endif()
 
 if (MSVC)
     #option(USE_MSVC_RUNTIME_LIBRARY_DLL "Use MSVC runtime library DLL" ON)
-	set(USE_MSVC_RUNTIME_LIBRARY_DLL ON)
+	set(USE_MSVC_RUNTIME_LIBRARY_DLL OFF)
 endif()
 
 if (BUILD_SHARED_LIBS)
