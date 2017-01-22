@@ -1,0 +1,2 @@
+add_library(OpenSimplexNoise STATIC thirdparty/openSimplexNoise/open-simplex-noise.c)
+target_include_directories(OpenSimplexNoise PUBLIC thirdparty/openSimplexNoise)
