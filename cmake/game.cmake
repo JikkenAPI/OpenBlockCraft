@@ -3,6 +3,8 @@ set (GAME_SOURCE
 	
 	source/platform/window.cpp
 	source/platform/window.hpp
+	source/platform/timer.cpp
+	source/platform/timer.hpp
 )
 
 set (GAME_LIBS

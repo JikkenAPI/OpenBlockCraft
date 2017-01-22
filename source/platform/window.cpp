@@ -25,7 +25,10 @@ Window::Window(int width, int height, API graphicsApi)
 
 	mWindow = glfwCreateWindow(width, height, "", nullptr, nullptr);
 	if (graphicsApi == API::eOPENGL)
+	{
 		glfwMakeContextCurrent(mWindow);
+		glfwSwapInterval(0);
+	}
 }
 
 Window::~Window() 
