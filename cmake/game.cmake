@@ -1,5 +1,8 @@
 set (GAME_SOURCE
 	source/main.cpp
+	
+	source/platform/window.cpp
+	source/platform/window.hpp
 )
 
 set (GAME_LIBS
