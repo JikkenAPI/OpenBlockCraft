@@ -6,16 +6,26 @@
 
 class Window 
 {
+	// Only the WindowManager class can allocate/deallocate Window
+	// objects.
+	friend class WindowManager;
+
+public:
 	enum class API
 	{
 		eNONE,
 		eOPENGL
 	};
 
-public:
-	Window(int width, int height, API = API::eOPENGL);
+	// Restriction of allocation.
+private:
+	Window(int width, int height, API);
 	~Window();
 
+	// no copy constructor
+	Window(const Window &window) = delete;
+
+public:
 	void setTitle(const std::string &title);
 
 	bool shouldClose() const;

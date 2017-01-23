@@ -6,6 +6,8 @@ set (GAME_SOURCE
 	source/platform/timer.hpp
 	source/platform/window.cpp
 	source/platform/window.hpp
+	source/platform/windowManager.cpp
+	source/platform/windowManager.hpp
 )
 
 set (GAME_LIBS
