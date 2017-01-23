@@ -1,10 +1,11 @@
 set (GAME_SOURCE
 	source/main.cpp
 	
-	source/platform/window.cpp
-	source/platform/window.hpp
+	source/platform/platform.hpp
 	source/platform/timer.cpp
 	source/platform/timer.hpp
+	source/platform/window.cpp
+	source/platform/window.hpp
 )
 
 set (GAME_LIBS

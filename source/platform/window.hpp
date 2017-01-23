@@ -1,6 +1,7 @@
 #ifndef _PLATFORM_WINDOW_H_
 #define _PLATFORM_WINDOW_H_
 
+#include <string>
 #include <GLFW/glfw3.h>
 
 class Window 
@@ -15,9 +16,11 @@ public:
 	Window(int width, int height, API = API::eOPENGL);
 	~Window();
 
-	void setTitle(const char *title);
+	void setTitle(const std::string &title);
 
-	GLFWwindow* getNativePtr() const { return mWindow;  }
+	bool shouldClose() const;
+
+	void swapBuffers();
 
 private:
 	GLFWwindow *mWindow;

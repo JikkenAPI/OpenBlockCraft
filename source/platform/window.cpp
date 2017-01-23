@@ -1,3 +1,5 @@
+#include <cassert>
+#include <GL/glew.h>
 #include "platform/window.hpp"
 
 Window::Window(int width, int height, API graphicsApi) 
@@ -28,10 +30,32 @@ Window::Window(int width, int height, API graphicsApi)
 	{
 		glfwMakeContextCurrent(mWindow);
 		glfwSwapInterval(0);
+
+		// start up glew
+		if (glewInit() != GLEW_OK)
+		{
+			// Unable to load GLEW
+			assert(false);
+		}
 	}
 }
 
 Window::~Window() 
 {
 	glfwDestroyWindow(mWindow);
+}
+
+void Window::setTitle(const std::string &title)
+{
+	glfwSetWindowTitle(mWindow, title.c_str());
+}
+
+bool Window::shouldClose() const
+{
+	return static_cast<bool>(glfwWindowShouldClose(mWindow));
+}
+
+void Window::swapBuffers()
+{
+	glfwSwapBuffers(mWindow);
 }
