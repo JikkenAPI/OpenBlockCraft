@@ -2,17 +2,15 @@
 #define _PLATFORM_WINDOWMANAGER_HPP_
 
 #include <vector>
+#include "core/singleton.hpp"
 #include "platform/window.hpp"
 
 /// A singleton class that manages window and input for the underneigth 
 /// subsystems.
-class WindowManager
+class WindowManager : public Singleton<WindowManager>
 {
-public:
-	static WindowManager* getSingleton();
-	static void destroy();
-
-private:
+	friend class Singleton<WindowManager>;
+protected:
 	WindowManager();
 	~WindowManager();
 	WindowManager(const WindowManager &) = delete;

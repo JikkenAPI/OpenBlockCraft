@@ -1,4 +1,6 @@
 set (GAME_SOURCE
+	source/core/singleton.hpp
+
 	source/main.cpp
 	
 	source/platform/platform.hpp

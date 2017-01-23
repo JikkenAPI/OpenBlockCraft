@@ -1,22 +1,6 @@
 #include <cassert>
 #include "platform/windowManager.hpp"
 
-WindowManager *gWindowManager = nullptr;
-
-WindowManager* WindowManager::getSingleton()
-{
-	if (gWindowManager == nullptr)
-		gWindowManager = new WindowManager();
-	return gWindowManager;
-}
-
-void WindowManager::destroy()
-{
-	assert(gWindowManager != nullptr);
-	delete gWindowManager;
-	gWindowManager = nullptr;
-}
-
 WindowManager::WindowManager()
 {
 

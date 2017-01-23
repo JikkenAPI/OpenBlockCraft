@@ -14,7 +14,7 @@ int main(int argc, const char **argv)
 {
 	Platform::initSubSystems();
 
-	Window* window = WindowManager::getSingleton()->createWindow(1440, 900);
+	Window* window = WindowManager::get()->createWindow(1440, 900);
 	Timer timer;
 	while (!window->shouldClose())
 	{
@@ -25,11 +25,11 @@ int main(int argc, const char **argv)
 		window->setTitle(std::to_string(static_cast<unsigned long>(fps)) + std::string(" fps"));
 		
 		window->swapBuffers();
-		WindowManager::getSingleton()->processEvents();
+		WindowManager::get()->processEvents();
 		timer.stop();
 	}
 
-	WindowManager::getSingleton()->destroyWindow(window);
+	WindowManager::get()->destroyWindow(window);
 	WindowManager::destroy();
 	Platform::cleanupSubSystems();
 	return 0;
