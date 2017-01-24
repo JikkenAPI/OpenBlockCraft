@@ -2,24 +2,20 @@
 #define _PLATFORM_PLATFORM_H_
 
 #include <cassert>
-#include <GLFW/glfw3.h>
+#include "platform/timer.hpp"
+#include "platform/windowManager.hpp"
 
 namespace Platform
 {
-	void initSubSystems()
-	{
-		// Init glfw
-		if (glfwInit() != GLFW_TRUE)
-		{
-			assert(false);
-		}
-	}
+	void initSubSystems();
 
-	void cleanupSubSystems()
-	{
-		// destroy glfw
-		glfwTerminate();
-	}
+	void cleanupSubSystems();
+
+	Timer* createTimer();
+
+	void destroyTimer(Timer *timer);
+
+	WindowManager* getWindowManager();
 }
 
 #endif

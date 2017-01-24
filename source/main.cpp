@@ -14,23 +14,23 @@ int main(int argc, const char **argv)
 {
 	Platform::initSubSystems();
 
-	Window* window = WindowManager::get()->createWindow(1440, 900);
-	Timer timer;
+	Window* window = Platform::getWindowManager()->createWindow(1440, 900);
+	Timer *timer = Platform::createTimer();
 	while (!window->shouldClose())
 	{
-		timer.start();
+		timer->start();
 
 		// show delta from last frame (value of timer)
-		double fps = 1000.0 / timer.getDelta();
+		double fps = timer->getFPS();
 		window->setTitle(std::to_string(static_cast<unsigned long>(fps)) + std::string(" fps"));
 		
 		window->swapBuffers();
-		WindowManager::get()->processEvents();
-		timer.stop();
+		Platform::getWindowManager()->processEvents();
+		timer->stop();
 	}
 
-	WindowManager::get()->destroyWindow(window);
-	WindowManager::destroy();
+	Platform::getWindowManager()->destroyWindow(window);
+	Platform::destroyTimer(timer);
 	Platform::cleanupSubSystems();
 	return 0;
 }

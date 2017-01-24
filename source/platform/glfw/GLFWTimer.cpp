@@ -1,14 +1,11 @@
 #include <cassert>
-#include "platform/timer.hpp"
+#include "platform/glfw/GLFWTimer.hpp"
 
-Timer::Timer() 
+GLFWTimer::GLFWTimer() 
 {
-	mStart = 0;
-	mDelta = 0;
-	mStopped = true;
 }
 
-void Timer::start()
+void GLFWTimer::start()
 {
 	// Can't call twice in a row.
 	assert(mStopped);
@@ -17,7 +14,7 @@ void Timer::start()
 	mStopped = false;
 }
 
-void Timer::stop()
+void GLFWTimer::stop()
 {
 	// Can't call twice in a row.
 	assert(!mStopped);

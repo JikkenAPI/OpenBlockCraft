@@ -1,23 +1,11 @@
 #include <cassert>
 #include "platform/windowManager.hpp"
 
-WindowManager::WindowManager()
-{
-
-}
-
 WindowManager::~WindowManager()
 {
 	// cleanup all windows
 	for (Window *window : mWindows)
 		delete window;
-}
-
-Window* WindowManager::createWindow(int width, int height, Window::API graphicsApi)
-{
-	Window *window = new Window(width, height, graphicsApi);
-	mWindows.push_back(window);
-	return window;
 }
 
 void WindowManager::destroyWindow(Window *window)
@@ -39,9 +27,4 @@ Window* WindowManager::getPrimaryWindow() const
 
 	// The primary window is window 0. Always.
 	return mWindows[0];
-}
-
-void WindowManager::processEvents()
-{
-	glfwPollEvents();
 }

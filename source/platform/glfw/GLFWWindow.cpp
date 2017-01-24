@@ -1,8 +1,8 @@
 #include <cassert>
 #include <GL/glew.h>
-#include "platform/window.hpp"
+#include "platform/glfw/GLFWWindow.hpp"
 
-Window::Window(int width, int height, API graphicsApi) 
+GLFWWindow::GLFWWindow(int width, int height, API graphicsApi) 
 {
 	// set what kind of graphics we will need.
 	if (graphicsApi == API::eOPENGL)
@@ -40,22 +40,22 @@ Window::Window(int width, int height, API graphicsApi)
 	}
 }
 
-Window::~Window() 
+GLFWWindow::~GLFWWindow() 
 {
 	glfwDestroyWindow(mWindow);
 }
 
-void Window::setTitle(const std::string &title)
+void GLFWWindow::setTitle(const std::string &title)
 {
 	glfwSetWindowTitle(mWindow, title.c_str());
 }
 
-bool Window::shouldClose() const
+bool GLFWWindow::shouldClose() const
 {
 	return static_cast<bool>(glfwWindowShouldClose(mWindow));
 }
 
-void Window::swapBuffers()
+void GLFWWindow::swapBuffers()
 {
 	glfwSwapBuffers(mWindow);
 }

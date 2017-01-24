@@ -7,24 +7,21 @@
 
 /// A singleton class that manages window and input for the underneigth 
 /// subsystems.
-class WindowManager : public Singleton<WindowManager>
+class WindowManager
 {
-	friend class Singleton<WindowManager>;
 protected:
-	WindowManager();
-	~WindowManager();
-	WindowManager(const WindowManager &) = delete;
-	WindowManager(const WindowManager &&) = delete;
+	virtual ~WindowManager();
 
 public:
-	Window* createWindow(int width, int height, Window::API graphicsApi = Window::API::eOPENGL);
+	virtual Window* createWindow(int width, int height, Window::API graphicsApi = Window::API::eOPENGL) = 0;
+
+	virtual void processEvents() = 0;
 
 	void destroyWindow(Window *window);
 
 	Window* getPrimaryWindow() const;
 
-	void processEvents();
-private:
+protected:
 	std::vector<Window*> mWindows;
 };
 

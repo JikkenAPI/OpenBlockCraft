@@ -9,7 +9,6 @@ class Window
 	// Only the WindowManager class can allocate/deallocate Window
 	// objects.
 	friend class WindowManager;
-
 public:
 	enum class API
 	{
@@ -17,23 +16,12 @@ public:
 		eOPENGL
 	};
 
-	// Restriction of allocation.
-private:
-	Window(int width, int height, API);
-	~Window();
-
-	// no copy constructor
-	Window(const Window &window) = delete;
-
 public:
-	void setTitle(const std::string &title);
+	virtual void setTitle(const std::string &title) = 0;
 
-	bool shouldClose() const;
+	virtual bool shouldClose() const = 0;
 
-	void swapBuffers();
-
-private:
-	GLFWwindow *mWindow;
+	virtual void swapBuffers() = 0;
 };
 
 #endif
