@@ -38,12 +38,40 @@ GLFWWindowManager::~GLFWWindowManager()
 
 Window* GLFWWindowManager::createWindow(int width, int height, Window::API graphicsApi)
 {
-	Window *window = new GLFWWindow(width, height, graphicsApi);
-	mWindows.push_back(window);
-	return window;
+	GLFWWindow *window = new GLFWWindow(width, height, graphicsApi);
+	mWindows.push_back(static_cast<Window*>(window));
+
+	// register events.
+	glfwSetKeyCallback(window->mWindow, GLFWCallbacks::keyCallback);
+	glfwSetMouseButtonCallback(window->mWindow, GLFWCallbacks::mouseButtonCallback);
+	glfwSetCursorPosCallback(window->mWindow, GLFWCallbacks::mousePositionCallback);
+
+	return static_cast<Window*>(window);
 }
 
 void GLFWWindowManager::processEvents()
 {
 	glfwPollEvents();
+}
+
+//-----------------------------------------------------------------------------
+// GLFW Input callbacks.
+//-----------------------------------------------------------------------------
+
+namespace GLFWCallbacks
+{
+	void keyCallback(GLFWwindow *window, int key, int scanCode, int action, int mods)
+	{
+
+	}
+
+	void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods)
+	{
+
+	}
+
+	void mousePositionCallback(GLFWwindow *window, double xPos, double yPos)
+	{
+
+	}
 }

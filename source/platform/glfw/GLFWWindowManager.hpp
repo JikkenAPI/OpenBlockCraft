@@ -27,6 +27,8 @@
 
 #include "platform/windowManager.hpp"
 
+struct GLFWwindow;
+
 /// A singleton class that manages window and input for the underneigth 
 /// subsystems.
 class GLFWWindowManager : public WindowManager, public Singleton<GLFWWindowManager>
@@ -44,5 +46,14 @@ public:
 
 	virtual void processEvents() override;
 };
+
+namespace GLFWCallbacks
+{
+	void keyCallback(GLFWwindow *window, int key, int scanCode, int action, int mods);
+
+	void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods);
+
+	void mousePositionCallback(GLFWwindow *window, double xPos, double yPos);
+}
 
 #endif
