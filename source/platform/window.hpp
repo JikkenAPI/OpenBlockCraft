@@ -2,7 +2,6 @@
 #define _PLATFORM_WINDOW_H_
 
 #include <string>
-#include <GLFW/glfw3.h>
 
 class Window 
 {

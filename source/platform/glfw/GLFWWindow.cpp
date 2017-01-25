@@ -52,7 +52,7 @@ void GLFWWindow::setTitle(const std::string &title)
 
 bool GLFWWindow::shouldClose() const
 {
-	return static_cast<bool>(glfwWindowShouldClose(mWindow));
+	return !!glfwWindowShouldClose(mWindow);
 }
 
 void GLFWWindow::swapBuffers()
