@@ -25,6 +25,7 @@
 #include <cassert>
 #include "platform/glfw/GLFWWindowManager.hpp"
 #include "platform/glfw/GLFWWindow.hpp"
+#include "platform/input/inputManager.hpp"
 
 GLFWWindowManager::GLFWWindowManager()
 {
@@ -62,16 +63,47 @@ namespace GLFWCallbacks
 {
 	void keyCallback(GLFWwindow *window, int key, int scanCode, int action, int mods)
 	{
+		// We don't care about repeat events for now.
+		if (action == GLFW_REPEAT)
+			return;
 
+		KeyPressEventData data;
+		data.key = Input::toKeyCode(key);
+		data.modifiers = Input::toKeyModifier(mods);
+		data.keyState = (action == GLFW_PRESS) ? Input::KeyState::ePRESSED : Input::KeyState::eRELEASED;
+
+		InputManager::get()->fireCallback(InputEventType::eKEYPRESSEVENT, data);
 	}
 
 	void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods)
 	{
-
+		MouseClickData data;
+		data.state = (action == GLFW_PRESS) ? Input::MouseButtonState::ePRESSED : Input::MouseButtonState::eRELEASED;
+		switch (button)
+		{
+		case GLFW_MOUSE_BUTTON_LEFT:
+			data.button = Input::MouseButton::eLEFT;
+			break;
+		case GLFW_MOUSE_BUTTON_RIGHT:
+			data.button = Input::MouseButton::eRIGHT;
+			break;
+		case GLFW_MOUSE_BUTTON_MIDDLE:
+			data.button = Input::MouseButton::eMIDDLE;
+			break;
+		default:
+			// We don't care about any other states.
+			return;
+		}
+		
+		InputManager::get()->fireCallback(InputEventType::eMOUSEBUTTONEVENT, data);
 	}
 
 	void mousePositionCallback(GLFWwindow *window, double xPos, double yPos)
 	{
+		MousePositionData data;
+		data.x = xPos;
+		data.y = yPos;
 
+		InputManager::get()->fireCallback(InputEventType::eMOUSEMOVEMENTEVENT, data);
 	}
 }
