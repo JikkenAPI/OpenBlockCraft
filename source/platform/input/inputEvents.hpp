@@ -39,6 +39,7 @@ enum InputEventType : size_t
 /// Interface that is used as a common base for all input event data.
 struct IInputEventData
 {
+	double mDeltaTime = 0.0;
 };
 
 struct KeyPressEventData : public IInputEventData

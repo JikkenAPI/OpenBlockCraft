@@ -22,7 +22,12 @@ set (GAME_SOURCE
 	source/platform/input/inputEvents.hpp
 	source/platform/input/inputKeys.hpp
 	source/platform/input/inputManager.cpp
-	source/platform/input/inputManager.hpp	
+	source/platform/input/inputManager.hpp
+
+	source/scene/camera.cpp
+	source/scene/camera.hpp
+	source/scene/sceneObject.cpp
+	source/scene/sceneObject.hpp	
 )
 
 set (GAME_LIBS
@@ -52,7 +57,8 @@ target_include_directories(CPPCraft PUBLIC ${GAME_INCLUDES})
 target_compile_definitions(CPPCraft PUBLIC GLEW_STATIC)
 
 source_group("core" REGULAR_EXPRESSION core/*)
+source_group("main" main.cpp)
 source_group("platform" REGULAR_EXPRESSION platform/*)
 source_group("platform\\glfw" REGULAR_EXPRESSION platform/glfw/*)
 source_group("platform\\input" REGULAR_EXPRESSION platform/input/*)
-source_group("main" main.cpp)
+source_group("scene" REGULAR_EXPRESSION scene/*)

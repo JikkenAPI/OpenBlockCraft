@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// iInputListener.hpp
+// sceneObject.cpp
 //
 // Copyright(c) 2017 Jeff Hutchinson
 //
@@ -22,20 +22,14 @@
 // SOFTWARE.
 //-----------------------------------------------------------------------------
 
-#ifndef _PLATFORM_INPUT_IINPUTLISTENER_HPP_
-#define _PLATFORM_INPUT_IINPUTLISTENER_HPP_
+#include "scene/sceneObject.hpp"
 
-#include "platform/input/inputEvents.hpp"
-
-/// An Interface that allows subscribing to the InputManager.
-class IInputListener
+SceneObject::SceneObject()
 {
-public:
-	virtual void onKeyPressEvent(const KeyPressEventData &data) {}
+	mPosition = glm::vec3(0.0f, 0.0f, 0.0f);
+}
 
-	virtual void onMouseClickEvent(const MouseClickData &data) {}
+SceneObject::~SceneObject()
+{
 
-	virtual void onMouseMoveEvent(const MousePositionData &data) {}
-};
-
-#endif
+}

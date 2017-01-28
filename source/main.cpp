@@ -27,6 +27,7 @@
 #include "platform/platform.hpp"
 #include "platform/windowManager.hpp"
 #include "platform/timer.hpp"
+#include "platform/input/inputManager.hpp"
 
 int main(int argc, const char **argv) 
 {
@@ -34,6 +35,7 @@ int main(int argc, const char **argv)
 
 	Window* window = Platform::getWindowManager()->createWindow(1440, 900);
 	Timer *timer = Platform::createTimer();
+	InputManager::get()->setTimer(timer);
 	while (!window->shouldClose())
 	{
 		timer->start();

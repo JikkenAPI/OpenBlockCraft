@@ -27,12 +27,17 @@
 
 InputManager::InputManager()
 {
-
+	mTimer = nullptr;
 }
 
 InputManager::~InputManager()
 {
 
+}
+
+void InputManager::setTimer(const Timer *timer)
+{
+	mTimer = timer;
 }
 
 void InputManager::subscribe(IInputListener *obj, InputEventType eventType)
@@ -54,8 +59,11 @@ void InputManager::subscribe(IInputListener *obj, InputEventType eventType)
 #endif
 }
 
-void InputManager::fireCallback(InputEventType eventType, const IInputEventData &data)
+void InputManager::fireCallback(InputEventType eventType, IInputEventData &data)
 {
+	// set delta time for event.
+	data.mDeltaTime = (mTimer != nullptr) ? mTimer->getDelta() : 0.0;
+
 	const auto &vec = mSubscribers[eventType];
 	switch (eventType)
 	{

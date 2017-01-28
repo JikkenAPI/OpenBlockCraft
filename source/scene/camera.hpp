@@ -1,5 +1,5 @@
 //-----------------------------------------------------------------------------
-// iInputListener.hpp
+// camera.hpp
 //
 // Copyright(c) 2017 Jeff Hutchinson
 //
@@ -20,22 +20,40 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 // SOFTWARE.
+//
+// Note: Some of the camera code was borrowed from learnopengl.com, which is
+// licensed under CC0 Universal 1.0
 //-----------------------------------------------------------------------------
 
-#ifndef _PLATFORM_INPUT_IINPUTLISTENER_HPP_
-#define _PLATFORM_INPUT_IINPUTLISTENER_HPP_
+#ifndef _SCENE_CAMERA_HPP_
+#define _SCENE_CAMERA_HPP_
 
-#include "platform/input/inputEvents.hpp"
+#include "scene/sceneObject.hpp"
+#include "platform/input/iInputListener.hpp"
 
-/// An Interface that allows subscribing to the InputManager.
-class IInputListener
+class Camera : public SceneObject, public IInputListener
 {
 public:
-	virtual void onKeyPressEvent(const KeyPressEventData &data) {}
+	Camera();
+	virtual ~Camera();
 
-	virtual void onMouseClickEvent(const MouseClickData &data) {}
+	virtual void onKeyPressEvent(const KeyPressEventData &data) override;
 
-	virtual void onMouseMoveEvent(const MousePositionData &data) {}
+	virtual void onMouseMoveEvent(const MousePositionData &data) override;
+
+	glm::mat4 getViewMatrix() const;
+
+protected:
+	glm::vec3 mFrontVector;
+	glm::vec3 mUpVector;
+	glm::vec3 mRightVector;
+	glm::vec3 mWorldUpVector;
+
+	// angles
+	float mYaw;
+	float mPitch;
+
+	void _updateCamera();
 };
 
 #endif

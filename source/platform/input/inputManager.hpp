@@ -30,6 +30,7 @@
 #include "core/singleton.hpp"
 #include "platform/input/inputEvents.hpp"
 #include "platform/input/iInputListener.hpp"
+#include "platform/timer.hpp"
 
 class InputManager : public Singleton<InputManager>
 {
@@ -47,12 +48,16 @@ protected:
 
 public:
 
+	void setTimer(const Timer *timer);
+
 	void subscribe(IInputListener *obj, InputEventType eventType);
 
-	void fireCallback(InputEventType eventType, const IInputEventData &data);
+	void fireCallback(InputEventType eventType, IInputEventData &data);
 
 protected:
 	Container mSubscribers;
+
+	const Timer *mTimer;
 };
 
 #endif
