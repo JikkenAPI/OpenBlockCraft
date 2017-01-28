@@ -40,6 +40,9 @@ Camera::Camera()
 	mRightVector = glm::vec3(0.0f, 0.0f, 0.0f);
 	mUpVector = glm::vec3(0.0f, 0.0f, 0.0f);
 
+	mLastMousePos = glm::vec2(0.0f, 0.0f);
+	mFirstMouseMove = true;
+
 	mYaw = -90.0f;
 	mPitch = 0.0f;
 	
@@ -80,8 +83,17 @@ void Camera::onKeyPressEvent(const KeyPressEventData &data)
 
 void Camera::onMouseMoveEvent(const MousePositionData &data)
 {
-	mYaw += static_cast<float>(data.x) * MOUSE_SENSITIVITY;
-	mPitch += static_cast<float>(data.y) * MOUSE_SENSITIVITY;
+	// record first movement. Second movent will move it.
+	if (mFirstMouseMove)
+	{
+		mLastMousePos = glm::vec2(data.x, data.y);
+		return;
+	}
+
+	mYaw += (static_cast<float>(data.x) - mLastMousePos.x) * MOUSE_SENSITIVITY;
+	mPitch += (mLastMousePos.y - static_cast<float>(data.y)) * MOUSE_SENSITIVITY; // Reversed y
+
+	mLastMousePos = glm::vec2(data.x, data.y);
 
 	// pitch clamping
 	mPitch = glm::clamp(mPitch, -90.0f, 90.0f);
@@ -89,9 +101,15 @@ void Camera::onMouseMoveEvent(const MousePositionData &data)
 	_updateCamera();
 }
 
-glm::mat4 Camera::getViewMatrix() const
+inline glm::mat4 Camera::getViewMatrix() const
 {
 	return glm::lookAt(mPosition, mPosition + mFrontVector, mUpVector);
+}
+
+inline void Camera::getYawPitch(float &yaw, float &pitch) const
+{
+	yaw = mYaw;
+	pitch = mPitch;
 }
 
 void Camera::_updateCamera()

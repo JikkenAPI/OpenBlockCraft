@@ -41,13 +41,19 @@ public:
 
 	virtual void onMouseMoveEvent(const MousePositionData &data) override;
 
-	glm::mat4 getViewMatrix() const;
+	inline glm::mat4 getViewMatrix() const;
+
+	inline void getYawPitch(float &yaw, float &pitch) const;
 
 protected:
 	glm::vec3 mFrontVector;
 	glm::vec3 mUpVector;
 	glm::vec3 mRightVector;
 	glm::vec3 mWorldUpVector;
+
+	/// Used so we can calculate mouse delta for movement.
+	glm::vec2 mLastMousePos;
+	bool mFirstMouseMove;
 
 	// angles
 	float mYaw;
