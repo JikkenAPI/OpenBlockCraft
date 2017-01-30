@@ -234,13 +234,15 @@ void render(Camera *camera, double dt)
 	glBindVertexArray(vao);
 	checkGLErrors();
 
-	glm::mat4 model = glm::mat4(1.0f);
-	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
-	checkGLErrors();
+	// draw a bunch of cubes!
+	for (int i = 0; i < 50; i++)
+	{
+		glm::mat4 model = glm::mat4(1.0f);
+		model = glm::translate(model, glm::vec3(i * -2, i * -2, i * -2));
 
-	// drawcall
-	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(0));
-	checkGLErrors();
+		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(0));
+	}
 }
 
 int main(int argc, const char **argv) 
