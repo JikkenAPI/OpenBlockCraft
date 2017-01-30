@@ -38,11 +38,17 @@ const char *vShader =
 "\n"
 "layout(location = 0) in vec4 vertex;\n"
 "\n"
-"uniform mat4 mvp;\n"
+"layout(std140) uniform Camera\n"
+"{\n"
+"\   mat4 proj;\n"
+"\   mat4 view;\n"
+"};\n"
+"\n"
+"uniform mat4 model;\n"
 "\n"
 "void main()\n"
 "{\n"
-"   gl_Position = mvp * vec4(vertex.xyz, 1.0);\n"
+"   gl_Position = proj * view * model * vec4(vertex.xyz, 1.0);\n"
 "}";
 
 const char *fShader =
@@ -59,10 +65,13 @@ const char *fShader =
 GLuint vbo; // Vertex Buffer Object
 GLuint vao; // Vertex Array Object
 GLuint ibo; // Index buffer object
+GLuint ubo; // UBO for projection and view matrices (Camera)
 
 GLuint program; // Shader Program
 
-GLuint mvpLoc; // mvp uniform
+GLuint modelLoc; // mvp uniform
+
+const int UBO_CAMERA_LOCATION = 0;
 
 bool checkShaderErrors(GLuint shader, GLenum status)
 {
@@ -160,10 +169,21 @@ void initGL()
 		// bind buffers
 		glBindBuffer(GL_ARRAY_BUFFER, vbo);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-		glBindVertexArray(0);
 	}
 
-	mvpLoc = glGetUniformLocation(program, "mvp");
+	modelLoc = glGetUniformLocation(program, "model");
+
+	// ubo
+	glGenBuffers(1, &ubo);
+	glBindBuffer(GL_UNIFORM_BUFFER, ubo);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4) * 2, NULL, GL_DYNAMIC_DRAW);
+	// bind ubo
+	glUniformBlockBinding(program, glGetUniformBlockIndex(program, "Camera"), UBO_CAMERA_LOCATION);
+	glBindBufferBase(GL_UNIFORM_BUFFER, UBO_CAMERA_LOCATION, ubo);
+
+	// bind proj matrix since it doesn't change yet :)
+	glm::mat4 proj = glm::perspective(90.0f, 1440.0f / 900.0f, 0.1f, 200.0f);
+	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), &proj[0][0]);
 
 	// set up for rendering.
 	glUseProgram(program);
@@ -173,16 +193,16 @@ void render(Camera *camera, double dt)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	// bind view matrix
+	glm::mat4 view = camera->getViewMatrix();
+	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), &view[0][0]);
+
 	// bind vao and all of that jazz
 	glBindVertexArray(vao);
 	checkGLErrors();
 
-	// bind mvp
-	glm::mat4 proj = glm::perspective(90.0f, 1440.0f / 900.0f, 0.1f, 200.0f);
-	glm::mat4 view = camera->getViewMatrix();
 	glm::mat4 model = glm::mat4(1.0f);
-	glm::mat4 mvp = proj * view * model;
-	glUniformMatrix4fv(mvpLoc, 1, GL_FALSE, &mvp[0][0]);
+	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
 	checkGLErrors();
 
 	// drawcall
