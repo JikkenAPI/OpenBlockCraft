@@ -31,7 +31,7 @@
 
 const float MOUSE_SENSITIVITY = 0.01f;
 
-const float CAMERA_SPEED = 3.0f;
+const float CAMERA_SPEED = 1.0f;
 
 Camera::Camera()
 {
@@ -87,6 +87,7 @@ void Camera::onMouseMoveEvent(const MousePositionData &data)
 	if (mFirstMouseMove)
 	{
 		mLastMousePos = glm::vec2(data.x, data.y);
+		mFirstMouseMove = false;
 		return;
 	}
 
