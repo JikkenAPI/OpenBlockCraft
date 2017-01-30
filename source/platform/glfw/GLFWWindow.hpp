@@ -51,8 +51,11 @@ public:
 
 	virtual void swapBuffers() override;
 
+	virtual void toggleCursor() override;
+
 private:
 	GLFWwindow *mWindow;
+	bool mCursorShowing = true;
 };
 
 #endif

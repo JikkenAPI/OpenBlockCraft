@@ -26,8 +26,9 @@
 #define _PLATFORM_WINDOW_H_
 
 #include <string>
+#include "platform/input/iInputListener.hpp"
 
-class Window 
+class Window : public IInputListener
 {
 	// Only the WindowManager class can allocate/deallocate Window
 	// objects.
@@ -40,11 +41,22 @@ public:
 	};
 
 public:
+	virtual void onKeyPressEvent(const KeyPressEventData &data) override 
+	{
+		if (data.keyState == Input::KeyState::ePRESSED)
+		{
+			if (data.key == Input::Key::eESCAPE)
+				toggleCursor();
+		}
+	}
+
 	virtual void setTitle(const std::string &title) = 0;
 
 	virtual bool shouldClose() const = 0;
 
 	virtual void swapBuffers() = 0;
+
+	virtual void toggleCursor() = 0;
 };
 
 #endif

@@ -197,6 +197,7 @@ int main(int argc, const char **argv)
 	Window* window = Platform::getWindowManager()->createWindow(1440, 900);
 	Timer *timer = Platform::createTimer();
 	InputManager::get()->setTimer(timer);
+	InputManager::get()->subscribe(window, InputEventType::eKEYPRESSEVENT);
 
 	// create camera
 	Camera *camera = new Camera();
