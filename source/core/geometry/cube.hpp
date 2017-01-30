@@ -27,13 +27,13 @@
 
 #include <glm/glm.hpp>
 
-glm::vec3 sCubeFaceNormals[6] = {
-	glm::vec3(0.0f, 0.0f, -1.0f),
-	glm::vec3(0.0f,  0.0f,  1.0f),
-	glm::vec3(-1.0f,  0.0f,  0.0f),
-	glm::vec3(1.0f,  0.0f,  0.0f),
-	glm::vec3(0.0f, -1.0f,  0.0f),
-	glm::vec3(0.0f,  1.0f,  0.0f)
+glm::vec4 sCubeFaceNormals[6] = {
+	glm::vec4(0.0f, 0.0f, -1.0f, 1.0f),
+	glm::vec4(0.0f,  0.0f,  1.0f, 1.0f),
+	glm::vec4(-1.0f,  0.0f,  0.0f, 1.0f),
+	glm::vec4(1.0f,  0.0f,  0.0f, 1.0f),
+	glm::vec4(0.0f, -1.0f,  0.0f, 1.0f),
+	glm::vec4(0.0f,  1.0f,  0.0f, 1.0f)
 };
 
 struct CubeVert

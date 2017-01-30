@@ -38,10 +38,17 @@ const char *vShader =
 "\n"
 "layout(location = 0) in vec4 vertex;\n"
 "\n"
+"out vec3 vertexNormal;\n"
+"\n"
 "layout(std140) uniform Camera\n"
 "{\n"
-"\   mat4 proj;\n"
-"\   mat4 view;\n"
+"   mat4 proj;\n"
+"   mat4 view;\n"
+"};\n"
+"\n"
+"layout(std140) uniform Normals\n"
+"{\n"
+"   vec4 normals[6];\n"
 "};\n"
 "\n"
 "uniform mat4 model;\n"
@@ -49,29 +56,33 @@ const char *vShader =
 "void main()\n"
 "{\n"
 "   gl_Position = proj * view * model * vec4(vertex.xyz, 1.0);\n"
+"   vertexNormal = normals[floatBitsToInt(vertex.w)].xyz;\n"
 "}";
 
 const char *fShader =
 "#version 330 core\n"
+"\n"
+"in vec3 vertexNormal;\n"
 "\n"
 "out vec4 outFragColor;\n"
 "\n"
 "void main()\n"
 "{\n"
 "   outFragColor = vec4(0.0, 1.0, 0.0, 1.0);\n"
-"}\n"
-"";
+"}";
 
 GLuint vbo; // Vertex Buffer Object
 GLuint vao; // Vertex Array Object
 GLuint ibo; // Index buffer object
 GLuint ubo; // UBO for projection and view matrices (Camera)
+GLuint normalUBO; // Ubo for normals.
 
 GLuint program; // Shader Program
 
 GLuint modelLoc; // mvp uniform
 
 const int UBO_CAMERA_LOCATION = 0;
+const int UBO_NORMALS_LOCATION = 1;
 
 bool checkShaderErrors(GLuint shader, GLenum status)
 {
@@ -172,30 +183,52 @@ void initGL()
 	}
 
 	modelLoc = glGetUniformLocation(program, "model");
+	checkGLErrors();
 
 	// ubo
 	glGenBuffers(1, &ubo);
 	glBindBuffer(GL_UNIFORM_BUFFER, ubo);
 	glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4) * 2, NULL, GL_DYNAMIC_DRAW);
+	checkGLErrors();
+
 	// bind ubo
 	glUniformBlockBinding(program, glGetUniformBlockIndex(program, "Camera"), UBO_CAMERA_LOCATION);
 	glBindBufferBase(GL_UNIFORM_BUFFER, UBO_CAMERA_LOCATION, ubo);
+	checkGLErrors();
+
+	// normal ubo
+	glGenBuffers(1, &normalUBO);
+	glBindBuffer(GL_UNIFORM_BUFFER, normalUBO);
+	glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::vec4) * 6, &sCubeFaceNormals[0][0], GL_STATIC_DRAW);
+	checkGLErrors();
+
+	// bind ubo
+	glUniformBlockBinding(program, glGetUniformBlockIndex(program, "Normals"), UBO_NORMALS_LOCATION);
+	glBindBufferBase(GL_UNIFORM_BUFFER, UBO_NORMALS_LOCATION, normalUBO);
+	checkGLErrors();
 
 	// bind proj matrix since it doesn't change yet :)
 	glm::mat4 proj = glm::perspective(90.0f, 1440.0f / 900.0f, 0.1f, 200.0f);
+	glBindBuffer(GL_UNIFORM_BUFFER, ubo);
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), &proj[0][0]);
+	checkGLErrors();
 
 	// set up for rendering.
 	glUseProgram(program);
+
+	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 void render(Camera *camera, double dt)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	checkGLErrors();
 
 	// bind view matrix
 	glm::mat4 view = camera->getViewMatrix();
+	glBindBuffer(GL_UNIFORM_BUFFER, ubo);
 	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), &view[0][0]);
+	checkGLErrors();
 
 	// bind vao and all of that jazz
 	glBindVertexArray(vao);
