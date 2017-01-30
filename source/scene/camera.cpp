@@ -101,12 +101,12 @@ void Camera::onMouseMoveEvent(const MousePositionData &data)
 	_updateCamera();
 }
 
-inline glm::mat4 Camera::getViewMatrix() const
+glm::mat4 Camera::getViewMatrix() const
 {
 	return glm::lookAt(mPosition, mPosition + mFrontVector, mUpVector);
 }
 
-inline void Camera::getYawPitch(float &yaw, float &pitch) const
+void Camera::getYawPitch(float &yaw, float &pitch) const
 {
 	yaw = mYaw;
 	pitch = mPitch;

@@ -33,6 +33,8 @@ public:
 	SceneObject();
 	virtual ~SceneObject();
 
+	void setPosition(const glm::vec3 &pos) { mPosition = pos; }
+
 protected:
 	glm::vec3 mPosition;
 };

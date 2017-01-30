@@ -1,4 +1,5 @@
 set (GAME_SOURCE
+	source/core/geometry/cube.hpp
 	source/core/singleton.hpp
 
 	source/main.cpp
@@ -57,6 +58,7 @@ target_include_directories(CPPCraft PUBLIC ${GAME_INCLUDES})
 target_compile_definitions(CPPCraft PUBLIC GLEW_STATIC)
 
 source_group("core" REGULAR_EXPRESSION core/*)
+source_group("core\\geometry" REGULAR_EXPRESSION core/geometry/*)
 source_group("main" main.cpp)
 source_group("platform" REGULAR_EXPRESSION platform/*)
 source_group("platform\\glfw" REGULAR_EXPRESSION platform/glfw/*)

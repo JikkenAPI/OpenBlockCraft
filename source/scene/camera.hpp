@@ -41,9 +41,9 @@ public:
 
 	virtual void onMouseMoveEvent(const MousePositionData &data) override;
 
-	inline glm::mat4 getViewMatrix() const;
+	glm::mat4 getViewMatrix() const;
 
-	inline void getYawPitch(float &yaw, float &pitch) const;
+	void getYawPitch(float &yaw, float &pitch) const;
 
 protected:
 	glm::vec3 mFrontVector;
