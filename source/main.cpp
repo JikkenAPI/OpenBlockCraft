@@ -32,44 +32,7 @@
 #include "platform/input/inputManager.hpp"
 #include "core/geometry/cube.hpp"
 #include "scene/camera.hpp"
-
-const char *vShader =
-"#version 330 core\n"
-"\n"
-"layout(location = 0) in vec4 vertex;\n"
-"\n"
-"out vec3 vertexNormal;\n"
-"\n"
-"layout(std140) uniform Camera\n"
-"{\n"
-"   mat4 proj;\n"
-"   mat4 view;\n"
-"};\n"
-"\n"
-"layout(std140) uniform Normals\n"
-"{\n"
-"   vec4 normals[6];\n"
-"};\n"
-"\n"
-"uniform mat4 model;\n"
-"\n"
-"void main()\n"
-"{\n"
-"   gl_Position = proj * view * model * vec4(vertex.xyz, 1.0);\n"
-"   vertexNormal = normals[floatBitsToInt(vertex.w)].xyz;\n"
-"}";
-
-const char *fShader =
-"#version 330 core\n"
-"\n"
-"in vec3 vertexNormal;\n"
-"\n"
-"out vec4 outFragColor;\n"
-"\n"
-"void main()\n"
-"{\n"
-"   outFragColor = vec4(0.0, 1.0, 0.0, 1.0);\n"
-"}";
+#include "core/file.hpp"
 
 GLuint vbo; // Vertex Buffer Object
 GLuint vao; // Vertex Array Object
@@ -110,6 +73,16 @@ void checkGLErrors()
 
 void initGL()
 {
+	File vShader("Assets/chunkV.glsl", File::AccessFlags::eREAD);
+	File fShader("Assets/chunkF.glsl", File::AccessFlags::eREAD);
+
+	if (!vShader.isFile() || !fShader.isFile())
+	{
+		std::printf("Unable to find shaders!");
+		assert(false);
+		return;
+	}
+
 	// For now, just use global state VAO
 	glGenVertexArrays(1, &vao);
 	glBindVertexArray(vao);
@@ -124,12 +97,18 @@ void initGL()
 		GLuint v = glCreateShader(GL_VERTEX_SHADER);
 		GLuint f = glCreateShader(GL_FRAGMENT_SHADER);
 		checkGLErrors();
-		glShaderSource(v, 1, &vShader, 0);
+		std::string vContents;
+		vShader.readFile(vContents);
+		const char *contents = reinterpret_cast<const char*>(vContents.c_str());
+		glShaderSource(v, 1, &contents, 0);
 		checkGLErrors();
 		glCompileShader(v);
 		checkGLErrors();
 		checkShaderErrors(v, GL_COMPILE_STATUS);
-		glShaderSource(f, 1, &fShader, 0);
+		std::string fContents;
+		fShader.readFile(fContents);
+		const char *fContents2 = reinterpret_cast<const char*>(fContents.c_str());
+		glShaderSource(f, 1, &fContents2, 0);
 		checkGLErrors();
 		glCompileShader(f);
 		checkGLErrors();
