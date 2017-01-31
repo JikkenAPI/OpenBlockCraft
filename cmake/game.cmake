@@ -1,5 +1,7 @@
 set (GAME_SOURCE
 	source/core/geometry/cube.hpp
+	source/core/file.cpp
+	source/core/file.hpp
 	source/core/singleton.hpp
 
 	source/main.cpp
