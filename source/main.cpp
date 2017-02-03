@@ -237,22 +237,40 @@ void render(Camera *camera, double dt)
 	glBindVertexArray(vao);
 	checkGLErrors();
 
-	auto heightMap = genHeightMap(glm::vec3(0, 0, 0));
+	const int count = 9;
 
-	// draw a bunch of cubes!
-	for (int j = 0; j < CHUNK_SIZE; j++)
+	glm::vec3 chunks[count] = {
+		glm::vec3(0.0f, 0.0f, 0.0f),
+		glm::vec3(-CHUNK_SIZE, 0.0f, 0.0f),
+		glm::vec3(CHUNK_SIZE, 0.0f, 0.0f),
+		glm::vec3(0.0f, 0.0f, -CHUNK_SIZE),
+		glm::vec3(0.0f, 0.0f, CHUNK_SIZE),
+
+		glm::vec3(-CHUNK_SIZE, 0.0f, CHUNK_SIZE),
+		glm::vec3(CHUNK_SIZE, 0.0f, CHUNK_SIZE),
+		glm::vec3(CHUNK_SIZE, 0.0f, -CHUNK_SIZE),
+		glm::vec3(-CHUNK_SIZE, 0.0f, -CHUNK_SIZE)
+	};
+
+	for (int i = 0; i < count; i++)
 	{
-		for (int k = 0; k < CHUNK_SIZE; k++)
+		auto heightMap = genHeightMap(chunks[i]);
+
+		// draw a bunch of cubes!
+		for (int j = 0; j < CHUNK_SIZE; j++)
 		{
-			int z = j;
-			int x = k;
-			int height = heightMap[x + (z * CHUNK_SIZE)];
+			for (int k = 0; k < CHUNK_SIZE; k++)
+			{
+				int z = j;
+				int x = k;
+				int height = heightMap[x + (z * CHUNK_SIZE)];
 
-			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::translate(model, glm::vec3(x, height, z));
+				glm::mat4 model = glm::mat4(1.0f);
+				model = glm::translate(model, glm::vec3(x + chunks[i].x, height, z + chunks[i].z));
 
-			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
-			glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(0));
+				glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
+				glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, nullptr);
+			}
 		}
 	}
 }
