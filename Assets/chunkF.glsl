@@ -1,16 +1,24 @@
 #version 330 core
 
 in vec3 vertexNormal;
-in float vertexHeight;
 
 out vec4 outFragColor;
 
+layout(std140) uniform Sun
+{
+	vec4 sunDirection;
+	vec4 sunAmbient;
+	vec4 sunDiffuse;
+};
+
 void main()
 {
-	if (vertexHeight <= 5.0 )
-		outFragColor = vec4(0.0, 1.0, 0.0, 1.0);
-	else if (vertexHeight < 11.0)
-		outFragColor = vec4(1.0, 0.0, 0.0, 1.0);
-	else
-		outFragColor = vec4(0.0, 0.0, 1.0, 1.0);
+	vec4 ambient = sunAmbient;
+
+	// Calculation for sunlight
+	vec3 lightDir = normalize(-sunDirection.xyz);
+	float diff = max(dot(normalize(vertexNormal), lightDir), 0.0);
+	vec4 diffuse = sunDiffuse * diff;
+
+	outFragColor = ambient + diffuse;
 }

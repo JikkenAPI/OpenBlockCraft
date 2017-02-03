@@ -40,6 +40,7 @@ GLuint vao; // Vertex Array Object
 GLuint ibo; // Index buffer object
 GLuint ubo; // UBO for projection and view matrices (Camera)
 GLuint normalUBO; // Ubo for normals.
+GLuint sunUBO; // ubo for sun
 
 GLuint program; // Shader Program
 
@@ -47,8 +48,16 @@ GLuint modelLoc; // mvp uniform
 
 const int UBO_CAMERA_LOCATION = 0;
 const int UBO_NORMALS_LOCATION = 1;
+const int UBO_SUN_LOCATION = 2;
 
 const int CHUNK_SIZE = 16;
+
+struct
+{
+	glm::vec4 direction;
+	glm::vec4 ambient;
+	glm::vec4 diffuse;
+} SunUBOData;
 
 bool checkShaderErrors(GLuint shader, GLenum status)
 {
@@ -209,6 +218,20 @@ void initGL()
 	glUniformBlockBinding(program, glGetUniformBlockIndex(program, "Normals"), UBO_NORMALS_LOCATION);
 	glBindBufferBase(GL_UNIFORM_BUFFER, UBO_NORMALS_LOCATION, normalUBO);
 	checkGLErrors();
+
+	{
+		SunUBOData.direction = glm::vec4(-0.2f, -1.0f, -3.0f, 0.0f);
+		SunUBOData.ambient = glm::vec4(0.1f, 0.1f, 0.1f, 0.0f);
+		SunUBOData.diffuse = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+		glGenBuffers(1, &sunUBO);
+		glBindBuffer(GL_UNIFORM_BUFFER, sunUBO);
+		glBufferData(GL_UNIFORM_BUFFER, sizeof(SunUBOData), &SunUBOData, GL_STATIC_DRAW);
+		checkGLErrors();
+
+		glUniformBlockBinding(program, glGetUniformBlockIndex(program, "Sun"), UBO_SUN_LOCATION);
+		glBindBufferBase(GL_UNIFORM_BUFFER, UBO_SUN_LOCATION, sunUBO);
+	}
 
 	// bind proj matrix since it doesn't change yet :)
 	glm::mat4 proj = glm::perspective(90.0f, 1440.0f / 900.0f, 0.1f, 200.0f);
