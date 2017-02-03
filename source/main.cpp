@@ -249,7 +249,10 @@ int main(int argc, const char **argv)
 		// show delta from last frame (value of timer)
 		double fps = timer->getFPS();
 		window->setTitle(std::to_string(static_cast<unsigned long>(fps)) + std::string(" fps"));
-		
+
+		// update camera and other objects
+		camera->update(timer->getDelta());
+
 		render(camera, timer->getDelta());
 
 		window->swapBuffers();

@@ -35,6 +35,8 @@ public:
 
 	void setPosition(const glm::vec3 &pos) { mPosition = pos; }
 
+	virtual void update(const double &dt) {}
+
 protected:
 	glm::vec3 mPosition;
 };

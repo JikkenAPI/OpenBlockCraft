@@ -29,9 +29,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "scene/camera.hpp"
 
-const float MOUSE_SENSITIVITY = 0.01f;
+const float MOUSE_SENSITIVITY = 0.1f;
 
-const float CAMERA_SPEED = 1.0f;
+const float CAMERA_SPEED = 0.05f;
 
 Camera::Camera()
 {
@@ -45,8 +45,9 @@ Camera::Camera()
 
 	mYaw = -90.0f;
 	mPitch = 0.0f;
-	
-	_updateCamera();
+
+	mMoveAxis.horizontal = 0.0f;
+	mMoveAxis.vertical = 0.0f;
 }
 
 Camera::~Camera()
@@ -56,28 +57,25 @@ Camera::~Camera()
 
 void Camera::onKeyPressEvent(const KeyPressEventData &data)
 {
-	if (data.keyState == Input::KeyState::ePRESSED)
+	float val = (data.keyState == Input::KeyState::ePRESSED) ? 1.0f : -1.0f;
+	switch (data.key)
 	{
-		float speed = static_cast<float>(data.mDeltaTime) * CAMERA_SPEED;
-		switch (data.key)
-		{
-			case Input::Key::eW:
-			case Input::Key::eUP:
-				mPosition += mFrontVector * speed;
-				break;
-			case Input::Key::eS:
-			case Input::Key::eDOWN:
-				mPosition -= mFrontVector * speed;
-				break;
-			case Input::Key::eD:
-			case Input::Key::eRIGHT:
-				mPosition += mRightVector * speed;
-				break;
-			case Input::Key::eA:
-			case Input::Key::eLEFT:
-				mPosition -= mRightVector * speed;
-				break;
-		}
+		case Input::Key::eW:
+		case Input::Key::eUP:
+			mMoveAxis.horizontal += val;
+			break;
+		case Input::Key::eS:
+		case Input::Key::eDOWN:
+			mMoveAxis.horizontal -= val;
+			break;
+		case Input::Key::eD:
+		case Input::Key::eRIGHT:
+			mMoveAxis.vertical += val;
+			break;
+		case Input::Key::eA:
+		case Input::Key::eLEFT:
+			mMoveAxis.vertical -= val;
+			break;
 	}
 }
 
@@ -98,8 +96,6 @@ void Camera::onMouseMoveEvent(const MousePositionData &data)
 
 	// pitch clamping
 	mPitch = glm::clamp(mPitch, -90.0f, 90.0f);
-
-	_updateCamera();
 }
 
 glm::mat4 Camera::getViewMatrix() const
@@ -113,7 +109,7 @@ void Camera::getYawPitch(float &yaw, float &pitch) const
 	pitch = mPitch;
 }
 
-void Camera::_updateCamera()
+void Camera::update(const double &dt) 
 {
 	float yaw = glm::radians(mYaw);
 	float pitch = glm::radians(mPitch);
@@ -129,4 +125,9 @@ void Camera::_updateCamera()
 	// Update right and up vectors
 	mRightVector = glm::normalize(glm::cross(mFrontVector, mWorldUpVector));
 	mUpVector = glm::normalize(glm::cross(mRightVector, mFrontVector));
+
+	// Update position
+	const float SPEED = static_cast<float>(dt) * CAMERA_SPEED;
+	mPosition += mFrontVector * SPEED * mMoveAxis.horizontal;
+	mPosition += mRightVector * SPEED * mMoveAxis.vertical;
 }

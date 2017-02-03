@@ -41,6 +41,8 @@ public:
 
 	virtual void onMouseMoveEvent(const MousePositionData &data) override;
 
+	virtual void update(const double &dt) override;
+
 	glm::mat4 getViewMatrix() const;
 
 	void getYawPitch(float &yaw, float &pitch) const;
@@ -55,11 +57,16 @@ protected:
 	glm::vec2 mLastMousePos;
 	bool mFirstMouseMove;
 
+	struct 
+	{
+		float horizontal;
+		float vertical;
+	} 
+	mMoveAxis;
+
 	// angles
 	float mYaw;
 	float mPitch;
-
-	void _updateCamera();
 };
 
 #endif
