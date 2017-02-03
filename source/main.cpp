@@ -25,6 +25,7 @@
 #include <cstdlib>
 #include <string>
 #include <GL/glew.h>
+#include <open-simplex-noise.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include "platform/platform.hpp"
 #include "platform/windowManager.hpp"
@@ -46,6 +47,8 @@ GLuint modelLoc; // mvp uniform
 
 const int UBO_CAMERA_LOCATION = 0;
 const int UBO_NORMALS_LOCATION = 1;
+
+const int CHUNK_SIZE = 16;
 
 bool checkShaderErrors(GLuint shader, GLenum status)
 {
@@ -69,6 +72,27 @@ void checkGLErrors()
 	{
 		printf("GL error: %i\n", err);
 	}
+}
+
+// @param pos The chunk position.
+std::vector<int> genHeightMap(const glm::vec3 &pos)
+{
+	std::vector<int> heightMap;
+	
+	osn_context *context;
+	open_simplex_noise(696969, &context);
+
+	for (int y = 0; y < CHUNK_SIZE; y++) {
+		for (int x = 0; x < CHUNK_SIZE; x++) {
+			double nx = double((pos.x / CHUNK_SIZE) + double(x) / CHUNK_SIZE);
+			double ny = double((pos.z / CHUNK_SIZE) + double(y) / CHUNK_SIZE);
+			int val   = int(((open_simplex_noise2(context, nx, ny) + 1.0) / 2.0) * CHUNK_SIZE) + pos.y;
+			heightMap.push_back(val);
+		}
+	}
+
+	open_simplex_noise_free(context);
+	return heightMap;
 }
 
 void initGL()
@@ -213,14 +237,23 @@ void render(Camera *camera, double dt)
 	glBindVertexArray(vao);
 	checkGLErrors();
 
-	// draw a bunch of cubes!
-	for (int i = 0; i < 50; i++)
-	{
-		glm::mat4 model = glm::mat4(1.0f);
-		model = glm::translate(model, glm::vec3(i * -2, i * -2, i * -2));
+	auto heightMap = genHeightMap(glm::vec3(0, 0, 0));
 
-		glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(0));
+	// draw a bunch of cubes!
+	for (int j = 0; j < CHUNK_SIZE; j++)
+	{
+		for (int k = 0; k < CHUNK_SIZE; k++)
+		{
+			int z = j;
+			int x = k;
+			int height = heightMap[x + (z * CHUNK_SIZE)];
+
+			glm::mat4 model = glm::mat4(1.0f);
+			model = glm::translate(model, glm::vec3(x, height, z));
+
+			glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
+			glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, reinterpret_cast<void*>(0));
+		}
 	}
 }
 
