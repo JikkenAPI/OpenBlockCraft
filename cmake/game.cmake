@@ -32,7 +32,13 @@ set (GAME_SOURCE
 	source/scene/camera.cpp
 	source/scene/camera.hpp
 	source/scene/sceneObject.cpp
-	source/scene/sceneObject.hpp	
+	source/scene/sceneObject.hpp
+
+	source/scene/world/block.hpp
+	source/scene/world/chunk.cpp
+	source/scene/world/chunk.hpp
+	source/scene/world/chunkManager.cpp
+	source/scene/world/chunkManager.hpp
 )
 
 set (GAME_LIBS
@@ -68,3 +74,4 @@ source_group("platform" REGULAR_EXPRESSION platform/*)
 source_group("platform\\glfw" REGULAR_EXPRESSION platform/glfw/*)
 source_group("platform\\input" REGULAR_EXPRESSION platform/input/*)
 source_group("scene" REGULAR_EXPRESSION scene/*)
+source_group("scene\\world" REGULAR_EXPRESSION scene/world/*)

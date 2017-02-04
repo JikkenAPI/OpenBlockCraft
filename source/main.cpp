@@ -93,8 +93,8 @@ std::vector<int> genHeightMap(const glm::vec3 &pos)
 
 	for (int y = 0; y < CHUNK_SIZE; y++) {
 		for (int x = 0; x < CHUNK_SIZE; x++) {
-			double nx = double((pos.x / CHUNK_SIZE) + double(x) / CHUNK_SIZE);
-			double ny = double((pos.z / CHUNK_SIZE) + double(y) / CHUNK_SIZE);
+			double nx = double((pos.x / CHUNK_SIZE) + double(x) / CHUNK_SIZE) * 0.5;
+			double ny = double((pos.z / CHUNK_SIZE) + double(y) / CHUNK_SIZE) * 0.5;
 			int val   = int(((open_simplex_noise2(context, nx, ny) + 1.0) / 2.0) * CHUNK_SIZE) + pos.y;
 			heightMap.push_back(val);
 		}
@@ -234,7 +234,7 @@ void initGL()
 	}
 
 	// bind proj matrix since it doesn't change yet :)
-	glm::mat4 proj = glm::perspective(90.0f, 1440.0f / 900.0f, 0.1f, 200.0f);
+	glm::mat4 proj = glm::perspective(90.0f, 1440.0f / 900.0f, 0.1f, 500.0f);
 	glBindBuffer(GL_UNIFORM_BUFFER, ubo);
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), &proj[0][0]);
 	checkGLErrors();
@@ -260,39 +260,29 @@ void render(Camera *camera, double dt)
 	glBindVertexArray(vao);
 	checkGLErrors();
 
-	const int count = 9;
+	const int GRID= 5;
 
-	glm::vec3 chunks[count] = {
-		glm::vec3(0.0f, 0.0f, 0.0f),
-		glm::vec3(-CHUNK_SIZE, 0.0f, 0.0f),
-		glm::vec3(CHUNK_SIZE, 0.0f, 0.0f),
-		glm::vec3(0.0f, 0.0f, -CHUNK_SIZE),
-		glm::vec3(0.0f, 0.0f, CHUNK_SIZE),
-
-		glm::vec3(-CHUNK_SIZE, 0.0f, CHUNK_SIZE),
-		glm::vec3(CHUNK_SIZE, 0.0f, CHUNK_SIZE),
-		glm::vec3(CHUNK_SIZE, 0.0f, -CHUNK_SIZE),
-		glm::vec3(-CHUNK_SIZE, 0.0f, -CHUNK_SIZE)
-	};
-
-	for (int i = 0; i < count; i++)
+	for (int i = -CHUNK_SIZE * GRID; i < CHUNK_SIZE * GRID; i+= CHUNK_SIZE)
 	{
-		auto heightMap = genHeightMap(chunks[i]);
-
-		// draw a bunch of cubes!
-		for (int j = 0; j < CHUNK_SIZE; j++)
+		for (int l = -CHUNK_SIZE * GRID; l < CHUNK_SIZE * GRID; l += CHUNK_SIZE)
 		{
-			for (int k = 0; k < CHUNK_SIZE; k++)
+			auto heightMap = genHeightMap(glm::vec3(i, 0.0f, l));
+
+			// draw a bunch of cubes!
+			for (int j = 0; j < CHUNK_SIZE; j++)
 			{
-				int z = j;
-				int x = k;
-				int height = heightMap[x + (z * CHUNK_SIZE)];
+				for (int k = 0; k < CHUNK_SIZE; k++)
+				{
+					int z = j;
+					int x = k;
+					int height = heightMap[x + (z * CHUNK_SIZE)];
 
-				glm::mat4 model = glm::mat4(1.0f);
-				model = glm::translate(model, glm::vec3(x + chunks[i].x, height, z + chunks[i].z));
+					glm::mat4 model = glm::mat4(1.0f);
+					model = glm::translate(model, glm::vec3(x + i, height, z + l));
 
-				glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
-				glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, nullptr);
+					glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
+					glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, nullptr);
+				}
 			}
 		}
 	}
