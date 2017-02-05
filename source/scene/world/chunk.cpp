@@ -57,11 +57,11 @@ Chunk::Chunk() :
 	// When we rebind the vertex array, this will all be implicitly
 	// bound by the driver.
 	{
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
 		glBindBuffer(GL_ARRAY_BUFFER, mGL.mVBO);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mGL.mIBO);
+
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
 	}
 	glBindVertexArray(0);
 }
@@ -204,11 +204,10 @@ extern void checkGLErrors();
 void Chunk::render(const double &dt)
 {
 	glBindVertexArray(mGL.mVAO);
-	checkGLErrors();
+
 	glm::mat4 model(1.0f);
 	model = glm::translate(model, mPosition);
 	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
-	checkGLErrors();
+
 	glDrawElements(GL_TRIANGLES, mIndexData.size(), GL_UNSIGNED_SHORT, nullptr);
-	checkGLErrors();
 }
