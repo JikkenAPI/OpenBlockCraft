@@ -201,7 +201,14 @@ void render(Camera *camera, double dt)
 void createChunks()
 {
 	// spawn a chunk
-	chunkManager->createChunkAtPosition(glm::vec3(0, 0, 0));
+	const int grid = 16;
+	for (int x = -CHUNK_LENGTH * grid; x < CHUNK_LENGTH * grid; x += CHUNK_LENGTH)
+	{
+		for (int z = -CHUNK_WIDTH * grid; z < CHUNK_WIDTH * grid; z += CHUNK_WIDTH)
+		{
+			chunkManager->createChunkAtPosition(glm::vec3(x, 0, z));
+		}
+	}
 }
 
 int main(int argc, const char **argv) 
@@ -222,7 +229,7 @@ int main(int argc, const char **argv)
 
 	// create camera
 	Camera *camera = new Camera();
-	camera->setPosition(glm::vec3(0.0f, 3.0f, 3.0f));
+	camera->setPosition(glm::vec3(0.0f, 100.0f, 3.0f));
 	InputManager::get()->subscribe(camera, InputEventType::eKEYPRESSEVENT);
 	InputManager::get()->subscribe(camera, InputEventType::eMOUSEMOVEMENTEVENT);
 

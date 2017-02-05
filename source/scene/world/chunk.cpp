@@ -28,6 +28,12 @@
 #include "core/noise.hpp"
 #include "scene/world/chunk.hpp"
 
+const int WATER_HEIGHT = 60;
+
+const int MAX_LAND_HEIGHT_FROM_WATER_SURFACE = 48;
+
+const int LAND_HEIGHT_BELOW_WATER = 5;
+
 inline int getCubeIndex(int x, int y, int z)
 {
 	return x + (z * CHUNK_LENGTH) + (y * CHUNK_LENGTH * CHUNK_WIDTH);
@@ -93,7 +99,7 @@ void Chunk::genHeightMap()
 
 			// calc height and then scale it.
 			double height = Noise::get()->noise2(xOffset, zOffset);
-			int intHeight = int((((height + 1.0) / 2.0) * CHUNK_HEIGHT));
+			int intHeight = int((((height + 1.0) / 2.0) * MAX_LAND_HEIGHT_FROM_WATER_SURFACE)) + WATER_HEIGHT - LAND_HEIGHT_BELOW_WATER;
 			mHeightMap.push_back(intHeight);
 		}
 	}
@@ -108,7 +114,7 @@ void Chunk::genTerrain()
 		for (int x = 0; x < CHUNK_LENGTH; ++x)
 		{
 			// Anything above height is air.
-			int height = mHeightMap[z + (x * CHUNK_WIDTH)];
+			int height = mHeightMap[x + (z * CHUNK_WIDTH)];
 			int cubeIndex = getCubeIndex(x, height, z);
 
 			// height layer is grass. yeah.
