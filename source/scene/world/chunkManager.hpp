@@ -25,4 +25,23 @@
 #ifndef _SCENE_WORLD_CHUNKMANAGER_HPP_
 #define _SCENE_WORLD_CHUNKMANAGER_HPP_
 
+#include <vector>
+#include "scene/world/chunk.hpp"
+
+class ChunkManager
+{
+public:
+	ChunkManager();
+	~ChunkManager();
+
+	void createChunkAtPosition(const glm::vec3 &pos);
+
+	void render(const double &dt);
+
+	const std::vector<Chunk*>& getChunks() const;
+
+private:
+	std::vector<Chunk*> mChunks;
+};
+
 #endif

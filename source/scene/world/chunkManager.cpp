@@ -23,3 +23,37 @@
 //-----------------------------------------------------------------------------
 
 #include "scene/world/chunkManager.hpp"
+
+ChunkManager::ChunkManager()
+{
+
+}
+
+ChunkManager::~ChunkManager()
+{
+	
+}
+
+void ChunkManager::createChunkAtPosition(const glm::vec3 &pos)
+{
+	Chunk *chunk = new Chunk();
+	chunk->setPosition(pos);
+	
+	// TODO: submit to a thread based system to gen chunk.
+	chunk->genHeightMap();
+	chunk->updateTerrainGL();
+
+	mChunks.push_back(chunk);
+}
+
+void ChunkManager::render(const double &dt)
+{
+	// TODO: Frustrum Culling.
+	for (Chunk *chunk : mChunks)
+		chunk->render(dt);
+}
+
+const std::vector<Chunk*>& ChunkManager::getChunks() const
+{
+	return mChunks;
+}
