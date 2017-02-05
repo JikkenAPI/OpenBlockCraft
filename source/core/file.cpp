@@ -87,8 +87,8 @@ bool File::readFile(std::string &contents)
 	}
 
 
-	char *buffer = new char[size];
-	memset(buffer, 0, sizeof(char) * size);
+	char *buffer = new char[size + 1];
+	memset(buffer, 0, sizeof(char) * (size + 1));
 	fread(buffer, sizeof(char), static_cast<size_t>(size), mFilePtr);
 	contents = buffer;
 	delete[] buffer;
