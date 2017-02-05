@@ -80,3 +80,8 @@ source_group("platform\\glfw" REGULAR_EXPRESSION platform/glfw/*)
 source_group("platform\\input" REGULAR_EXPRESSION platform/input/*)
 source_group("scene" REGULAR_EXPRESSION scene/*)
 source_group("scene\\world" REGULAR_EXPRESSION scene/world/*)
+
+# Set Visual Studio startup project(cmake 3.6+)
+if((${CMAKE_VERSION} VERSION_EQUAL 3.6.0) OR (${CMAKE_VERSION} VERSION_GREATER 3.6.0) AND MSVC)
+ set_property( DIRECTORY PROPERTY VS_STARTUP_PROJECT CPPCraft)
+endif()
