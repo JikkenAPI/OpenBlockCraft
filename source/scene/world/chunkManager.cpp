@@ -42,8 +42,9 @@ void ChunkManager::createChunkAtPosition(const glm::vec3 &pos)
 	// TODO: submit to a thread based system to gen chunk.
 	chunk->genTerrain();
 	chunk->genVisibleGeometry();
-	chunk->updateTerrainGL();
 
+	// Operate this on a callback on main thread system.
+	chunk->updateTerrainGL();
 	mChunks.push_back(chunk);
 }
 
