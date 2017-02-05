@@ -60,7 +60,12 @@ if (WIN32)
 		${GAME_LIBS}
 		OpenGL32
 	)
-endif()
+elseif (APPLE)
+	set (GAME_LIBS
+		${GAME_LIBS}
+		"-framework OpenGL"
+	)
+endif ()
 
 add_executable(CPPCraft ${GAME_SOURCE})
 target_link_libraries(CPPCraft ${GAME_LIBS})

@@ -24,6 +24,7 @@
 
 #include <cstdio>
 #include <glm/gtc/matrix_transform.hpp>
+#include <cstdlib>
 #include "core/noise.hpp"
 #include "scene/world/chunk.hpp"
 
