@@ -173,8 +173,6 @@ void Chunk::genTerrain()
 
 void Chunk::_addFace(Block &block, const glm::vec3 &pos, const CubeSides &cubeSide)
 {
-	printf("Building %d face: %f %f %f\n", cubeSide, pos.x, pos.y, pos.z);
-
 	// 4 verts per face
 	for (int i = 0; i < 4; ++i)
 	{

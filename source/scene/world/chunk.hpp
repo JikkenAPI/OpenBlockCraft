@@ -31,9 +31,9 @@
 #include "scene/world/block.hpp"
 #include "core/geometry/cube.hpp"
 
-const int CHUNK_LENGTH = 4;
-const int CHUNK_WIDTH = 4;
-const int CHUNK_HEIGHT = 4;
+const int CHUNK_LENGTH = 16;
+const int CHUNK_WIDTH = 16;
+const int CHUNK_HEIGHT = 256;
 
 class Chunk : public SceneObject
 {
