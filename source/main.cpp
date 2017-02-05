@@ -34,10 +34,9 @@
 #include "core/geometry/cube.hpp"
 #include "scene/camera.hpp"
 #include "core/file.hpp"
+#include "scene/world/chunkManager.hpp"
+#include "core/noise.hpp"
 
-GLuint vbo; // Vertex Buffer Object
-GLuint vao; // Vertex Array Object
-GLuint ibo; // Index buffer object
 GLuint ubo; // UBO for projection and view matrices (Camera)
 GLuint normalUBO; // Ubo for normals.
 GLuint sunUBO; // ubo for sun
@@ -46,11 +45,11 @@ GLuint program; // Shader Program
 
 GLuint modelLoc; // mvp uniform
 
+ChunkManager *chunkManager = nullptr;
+
 const int UBO_CAMERA_LOCATION = 0;
 const int UBO_NORMALS_LOCATION = 1;
 const int UBO_SUN_LOCATION = 2;
-
-const int CHUNK_SIZE = 16;
 
 struct
 {
@@ -83,27 +82,6 @@ void checkGLErrors()
 	}
 }
 
-// @param pos The chunk position.
-std::vector<int> genHeightMap(const glm::vec3 &pos)
-{
-	std::vector<int> heightMap;
-	
-	osn_context *context;
-	open_simplex_noise(696969, &context);
-
-	for (int y = 0; y < CHUNK_SIZE; y++) {
-		for (int x = 0; x < CHUNK_SIZE; x++) {
-			double nx = double((pos.x / CHUNK_SIZE) + double(x) / CHUNK_SIZE) * 0.5;
-			double ny = double((pos.z / CHUNK_SIZE) + double(y) / CHUNK_SIZE) * 0.5;
-			int val   = int(((open_simplex_noise2(context, nx, ny) + 1.0) / 2.0) * CHUNK_SIZE) + pos.y;
-			heightMap.push_back(val);
-		}
-	}
-
-	open_simplex_noise_free(context);
-	return heightMap;
-}
-
 void initGL()
 {
 	File vShader("Assets/chunkV.glsl", File::AccessFlags::eREAD);
@@ -115,10 +93,6 @@ void initGL()
 		assert(false);
 		return;
 	}
-
-	// For now, just use global state VAO
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
 
 	glEnable(GL_DEPTH_TEST);
 	checkGLErrors();
@@ -155,43 +129,6 @@ void initGL()
 		checkGLErrors();
 		glLinkProgram(program);
 		checkGLErrors();
-	}
-
-	// create VBO/VIO of a cube :D
-	{
-		glGenBuffers(1, &vbo);
-		glGenBuffers(1, &ibo);
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
-
-		// fill vbo/vio
-		glBufferData(GL_ARRAY_BUFFER, sizeof(CubeVert) * 4 * 6, &sCubeFaceVertices, GL_STATIC_DRAW);
-
-		unsigned short indices[36];
-		memset(indices, 0, sizeof(unsigned short) * 36);
-		unsigned short index = 0;
-		int k = 0;
-		// 6 faces / 6 quads
-		for (int i = 0; i < 6; i++)
-		{
-			indices[k++] = index + sCubeFaceIndices[0];
-			indices[k++] = index + sCubeFaceIndices[1];
-			indices[k++] = index + sCubeFaceIndices[2];
-			indices[k++] = index + sCubeFaceIndices[3];
-			indices[k++] = index + sCubeFaceIndices[4];
-			indices[k++] = index + sCubeFaceIndices[5];
-
-			index += 4;
-		}
-
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(short) * 36, indices, GL_STATIC_DRAW);
-
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
-
-		// bind buffers
-		glBindBuffer(GL_ARRAY_BUFFER, vbo);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 	}
 
 	modelLoc = glGetUniformLocation(program, "model");
@@ -256,36 +193,13 @@ void render(Camera *camera, double dt)
 	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), &view[0][0]);
 	checkGLErrors();
 
-	// bind vao and all of that jazz
-	glBindVertexArray(vao);
-	checkGLErrors();
+	chunkManager->render(dt);
+}
 
-	const int GRID= 5;
-
-	for (int i = -CHUNK_SIZE * GRID; i < CHUNK_SIZE * GRID; i+= CHUNK_SIZE)
-	{
-		for (int l = -CHUNK_SIZE * GRID; l < CHUNK_SIZE * GRID; l += CHUNK_SIZE)
-		{
-			auto heightMap = genHeightMap(glm::vec3(i, 0.0f, l));
-
-			// draw a bunch of cubes!
-			for (int j = 0; j < CHUNK_SIZE; j++)
-			{
-				for (int k = 0; k < CHUNK_SIZE; k++)
-				{
-					int z = j;
-					int x = k;
-					int height = heightMap[x + (z * CHUNK_SIZE)];
-
-					glm::mat4 model = glm::mat4(1.0f);
-					model = glm::translate(model, glm::vec3(x + i, height, z + l));
-
-					glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
-					glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_SHORT, nullptr);
-				}
-			}
-		}
-	}
+void createChunks()
+{
+	// spawn a chunk
+	chunkManager->createChunkAtPosition(glm::vec3(0, 0, 0));
 }
 
 int main(int argc, const char **argv) 
@@ -296,6 +210,13 @@ int main(int argc, const char **argv)
 	Timer *timer = Platform::createTimer();
 	InputManager::get()->setTimer(timer);
 	InputManager::get()->subscribe(window, InputEventType::eKEYPRESSEVENT);
+	Noise::get()->setSeed(696969);
+	chunkManager = new ChunkManager();
+
+	// global VAO, at least one needs to be bound
+	GLuint vao;
+	glGenVertexArrays(1, &vao);
+	glBindVertexArray(vao);
 
 	// create camera
 	Camera *camera = new Camera();
@@ -304,6 +225,8 @@ int main(int argc, const char **argv)
 	InputManager::get()->subscribe(camera, InputEventType::eMOUSEMOVEMENTEVENT);
 
 	initGL();
+
+	createChunks();
 
 	while (!window->shouldClose())
 	{
@@ -323,6 +246,8 @@ int main(int argc, const char **argv)
 		timer->stop();
 	}
 
+	delete chunkManager;
+	glDeleteVertexArrays(1, &vao);
 	Platform::getWindowManager()->destroyWindow(window);
 	Platform::destroyTimer(timer);
 	Platform::cleanupSubSystems();
