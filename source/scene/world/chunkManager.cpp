@@ -24,6 +24,17 @@
 
 #include "scene/world/chunkManager.hpp"
 
+// For INITIAL WORLD threaded chunk loading:
+// 1. Create first chunk.
+// THREADING BEGIN.
+// 2. Then, create a bunch of chunks surrounding chunk 0,0,0 chunk->genTerrain
+// 3. Wait for terrain to finish genning.
+// 4. send all chunks through chunk->getVisibleGeometry() so inner chunk culling
+// 5. Execute a callback when visible geometry chunks are done to main thread so
+//    it can be uploaded to the GL.
+// THREADING END.
+// 6. Watch it render pretty colors and cubes.
+
 ChunkManager::ChunkManager()
 {
 
