@@ -29,7 +29,7 @@
 
 inline int getCubeIndex(int x, int y, int z)
 {
-	return x + (y * CHUNK_LENGTH) + (z * CHUNK_LENGTH * CHUNK_WIDTH);
+	return x + (z * CHUNK_LENGTH) + (y * CHUNK_LENGTH * CHUNK_WIDTH);
 }
 
 Chunk::Chunk() :
@@ -133,7 +133,7 @@ void Chunk::genTerrain()
 	{
 		for (int x = 0; x < CHUNK_LENGTH; ++x)
 		{
-			for (int y = CHUNK_HEIGHT; y >= 0; y--)
+			for (int y = 0; y < CHUNK_HEIGHT; ++y)
 			{
 				Block &block = mBlocks[getCubeIndex(x, y, z)];
 				if (block.id == BlockType::eAIR)
@@ -142,27 +142,27 @@ void Chunk::genTerrain()
 				// Check all 6 sides to see if there is air.
 
 				// UP
-				if (isAir(x, y + 1, z))
+				if ((y + 1) == CHUNK_HEIGHT || isAir(x, y + 1, z))
 					_addFace(block, glm::vec3(x, y, z), CubeSides::eUP);
 
 				// DOWN
-				if (isAir(x, y - 1, z))
+				if ((y - 1) == -1 || isAir(x, y - 1, z))
 					_addFace(block, glm::vec3(x, y, z), CubeSides::eDOWN);
 
 				// LEFT
-				if (isAir(x - 1, y, z))
+				if ((x - 1) == -1 || isAir(x - 1, y, z))
 					_addFace(block, glm::vec3(x, y, z), CubeSides::eLEFT);
 
 				// RIGHT
-				if (isAir(x + 1, y, z))
+				if ((x + 1) == CHUNK_LENGTH || isAir(x + 1, y, z))
 					_addFace(block, glm::vec3(x, y, z), CubeSides::eRIGHT);
 
 				// FRONT
-				if (isAir(x, y, z + 1))
+				if ((z + 1) == CHUNK_WIDTH || isAir(x, y, z + 1))
 					_addFace(block, glm::vec3(x, y, z), CubeSides::eFRONT);
 
 				// BACK
-				if (isAir(x, y, z - 1))
+				if ((z - 1) == -1 || isAir(x, y, z - 1))
 					_addFace(block, glm::vec3(x, y, z), CubeSides::eBACK);
 			}
 		}
@@ -173,6 +173,8 @@ void Chunk::genTerrain()
 
 void Chunk::_addFace(Block &block, const glm::vec3 &pos, const CubeSides &cubeSide)
 {
+	printf("Building %d face: %f %f %f\n", cubeSide, pos.x, pos.y, pos.z);
+
 	// 4 verts per face
 	for (int i = 0; i < 4; ++i)
 	{

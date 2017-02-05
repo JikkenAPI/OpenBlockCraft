@@ -31,7 +31,7 @@
 
 const float MOUSE_SENSITIVITY = 0.1f;
 
-const float CAMERA_SPEED = 0.05f;
+const float CAMERA_SPEED = 0.01f;
 
 Camera::Camera()
 {

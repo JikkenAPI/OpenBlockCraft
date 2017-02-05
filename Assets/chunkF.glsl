@@ -20,5 +20,5 @@ void main()
 	float diff = max(dot(normalize(vertexNormal), lightDir), 0.0);
 	vec4 diffuse = sunDiffuse * diff;
 
-	outFragColor = ambient + diffuse;
+	outFragColor = vec4((vec3(1) + vertexNormal) / 2,1);//ambient + diffuse;
 }

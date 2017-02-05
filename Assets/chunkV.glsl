@@ -22,8 +22,8 @@ void main()
    gl_Position = proj * view * model * vec4(vertex.xyz, 1.0);
 
    int data = floatBitsToInt(vertex.w);
-   int normalIndex = (data >> 16) & 0xFFFF;
-   int textureIndex = data & 0xFFFF;
+   int normalIndex = data & 0xFFFF;
+   int textureIndex = (data >> 16) & 0xFFFF;
 
    vertexNormal = mat3(transpose(inverse(model))) * normals[normalIndex].xyz;
 }

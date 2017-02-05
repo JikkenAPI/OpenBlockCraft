@@ -39,11 +39,11 @@ static glm::vec4 sCubeFaceNormals[6] = {
 enum CubeSides : int
 {
 	eBACK = 0,
-	eFRONT = 1,
-	eLEFT = 2,
-	eRIGHT = 3,
-	eDOWN = 5,
-	eUP = 6
+	eFRONT,
+	eLEFT,
+	eRIGHT,
+	eDOWN,
+	eUP
 };
 
 struct CubeVert
@@ -63,42 +63,48 @@ struct InternalCubeVert
 };
 
 static InternalCubeVert sCubeFaceVertices[6][4] = {
+	// BACK
 	{
 		// Positions              // Normals Index        
 		{ glm::vec3(-0.5f, -0.5f, -0.5f), 0 },
-		{ glm::vec3( 0.5f, -0.5f, -0.5f), 0 },
+		{ glm::vec3(-0.5f,  0.5f, -0.5f), 0 },
 		{ glm::vec3( 0.5f,  0.5f, -0.5f), 0 },
-		{ glm::vec3(-0.5f,  0.5f, -0.5f), 0 }
+		{ glm::vec3(0.5f, -0.5f, -0.5f),  0 }
 	},
+	// FRONT
 	{
 		{ glm::vec3(-0.5f, -0.5f,  0.5f), 1 },
 		{ glm::vec3( 0.5f, -0.5f,  0.5f), 1 },
 		{ glm::vec3( 0.5f,  0.5f,  0.5f), 1 },
 		{ glm::vec3(-0.5f,  0.5f,  0.5f), 1 }
 	},
+	// LEFT
 	{	
 		{ glm::vec3(-0.5f,  0.5f,  0.5f), 2 },
 		{ glm::vec3(-0.5f,  0.5f, -0.5f), 2 },
 		{ glm::vec3(-0.5f, -0.5f, -0.5f), 2 },
 		{ glm::vec3(-0.5f, -0.5f,  0.5f), 2 }
 	},
+	// RIGHT
 	{
 		{ glm::vec3(0.5f,  0.5f,  0.5f),  3 },
-		{ glm::vec3(0.5f,  0.5f, -0.5f),  3 },
+		{ glm::vec3(0.5f, -0.5f,  0.5f),  3 },
 		{ glm::vec3(0.5f, -0.5f, -0.5f),  3 },
-		{ glm::vec3(0.5f, -0.5f,  0.5f),  3 }
+		{ glm::vec3(0.5f,  0.5f, -0.5f),  3 }
 	},
+	// DOWN
 	{
 		{ glm::vec3(-0.5f, -0.5f, -0.5f),  4 },
 		{ glm::vec3( 0.5f, -0.5f, -0.5f),  4 },
 		{ glm::vec3( 0.5f, -0.5f,  0.5f),  4 },
 		{ glm::vec3(-0.5f, -0.5f,  0.5f),  4 }
 	},
+	// UP
 	{
 		{ glm::vec3(-0.5f,  0.5f, -0.5f),  5 },
-		{ glm::vec3( 0.5f,  0.5f, -0.5f),  5 },
+		{ glm::vec3(-0.5f,  0.5f,  0.5f),  5 },
 		{ glm::vec3( 0.5f,  0.5f,  0.5f),  5 },
-		{ glm::vec3(-0.5f,  0.5f,  0.5f),  5 }
+		{ glm::vec3(0.5f,  0.5f, -0.5f),   5 }
 	}
 };
 

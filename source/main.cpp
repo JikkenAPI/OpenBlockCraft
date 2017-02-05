@@ -98,6 +98,8 @@ void initGL()
 	checkGLErrors();
 	glDepthFunc(GL_LESS);
 	checkGLErrors();
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
 
 	// create shaders
 	{
