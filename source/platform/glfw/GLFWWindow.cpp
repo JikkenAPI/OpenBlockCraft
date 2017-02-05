@@ -26,6 +26,26 @@
 #include <GL/glew.h>
 #include "platform/glfw/GLFWWindow.hpp"
 
+#if defined(_DEBUG) && !defined(__APPLE__)
+static void APIENTRY debugGLCb(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam)
+{
+	switch (severity)
+	{
+		case GL_DEBUG_SEVERITY_HIGH:
+			printf("[OpenGL] Severe Error: %s\n", message);
+			break;
+		case GL_DEBUG_SEVERITY_MEDIUM:
+			printf("[OpenGL] Medium Error: %s\n", message);
+			break;
+		case GL_DEBUG_SEVERITY_LOW:
+			printf("[OpenGL] Low Error: %s\n", message);
+			break;
+		//default:
+		//	printf("[OpenGL] Uknown: %s\n", message);
+	}
+}
+#endif
+
 GLFWWindow::GLFWWindow(int width, int height, API graphicsApi) 
 {
 	// set what kind of graphics we will need.
@@ -61,6 +81,13 @@ GLFWWindow::GLFWWindow(int width, int height, API graphicsApi)
 			// Unable to load GLEW
 			assert(false);
 		}
+
+#if defined(_DEBUG) && !defined(__APPLE__)
+		if (glewIsExtensionSupported("GL_KHR_debug"))
+		{
+			glDebugMessageCallback(debugGLCb, nullptr);
+		}
+#endif
 	}
 }
 
