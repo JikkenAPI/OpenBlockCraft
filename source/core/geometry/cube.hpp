@@ -27,13 +27,23 @@
 
 #include <glm/glm.hpp>
 
-glm::vec4 sCubeFaceNormals[6] = {
+static glm::vec4 sCubeFaceNormals[6] = {
 	glm::vec4(0.0f, 0.0f, -1.0f, 1.0f),
 	glm::vec4(0.0f,  0.0f,  1.0f, 1.0f),
 	glm::vec4(-1.0f,  0.0f,  0.0f, 1.0f),
 	glm::vec4(1.0f,  0.0f,  0.0f, 1.0f),
 	glm::vec4(0.0f, -1.0f,  0.0f, 1.0f),
 	glm::vec4(0.0f,  1.0f,  0.0f, 1.0f)
+};
+
+enum CubeSides : int
+{
+	eBACK = 0,
+	eFRONT = 1,
+	eLEFT = 2,
+	eRIGHT = 3,
+	eDOWN = 5,
+	eUP = 6
 };
 
 struct CubeVert
@@ -45,10 +55,14 @@ struct CubeVert
 		uint16_t textureID = 0;
 	};
 };
+
+struct InternalCubeVert
+{
+	glm::vec3 pos;
 	int normal;
 };
 
-CubeVert sCubeFaceVertices[6][4] = {
+static InternalCubeVert sCubeFaceVertices[6][4] = {
 	{
 		// Positions              // Normals Index        
 		{ glm::vec3(-0.5f, -0.5f, -0.5f), 0 },
@@ -69,26 +83,26 @@ CubeVert sCubeFaceVertices[6][4] = {
 		{ glm::vec3(-0.5f, -0.5f,  0.5f), 2 }
 	},
 	{
-		{ glm::vec3(0.5f,  0.5f,  0.5f),  3},
-		{ glm::vec3(0.5f,  0.5f, -0.5f),  3},
-		{ glm::vec3(0.5f, -0.5f, -0.5f),  3},
-		{ glm::vec3(0.5f, -0.5f,  0.5f),  3}
+		{ glm::vec3(0.5f,  0.5f,  0.5f),  3 },
+		{ glm::vec3(0.5f,  0.5f, -0.5f),  3 },
+		{ glm::vec3(0.5f, -0.5f, -0.5f),  3 },
+		{ glm::vec3(0.5f, -0.5f,  0.5f),  3 }
 	},
 	{
-		{ glm::vec3(-0.5f, -0.5f, -0.5f),  4},
-		{ glm::vec3( 0.5f, -0.5f, -0.5f),  4},
-		{ glm::vec3( 0.5f, -0.5f,  0.5f),  4},
-		{ glm::vec3(-0.5f, -0.5f,  0.5f),  4}
+		{ glm::vec3(-0.5f, -0.5f, -0.5f),  4 },
+		{ glm::vec3( 0.5f, -0.5f, -0.5f),  4 },
+		{ glm::vec3( 0.5f, -0.5f,  0.5f),  4 },
+		{ glm::vec3(-0.5f, -0.5f,  0.5f),  4 }
 	},
 	{
-		{ glm::vec3(-0.5f,  0.5f, -0.5f),  5},
-		{ glm::vec3( 0.5f,  0.5f, -0.5f),  5},
-		{ glm::vec3( 0.5f,  0.5f,  0.5f),  5},
-		{ glm::vec3(-0.5f,  0.5f,  0.5f),  5}
+		{ glm::vec3(-0.5f,  0.5f, -0.5f),  5 },
+		{ glm::vec3( 0.5f,  0.5f, -0.5f),  5 },
+		{ glm::vec3( 0.5f,  0.5f,  0.5f),  5 },
+		{ glm::vec3(-0.5f,  0.5f,  0.5f),  5 }
 	}
 };
 
-short sCubeFaceIndices[6] = {
+static short sCubeFaceIndices[6] = {
 	0,1,2,2,3,0
 };
 
