@@ -23,9 +23,17 @@
 //-----------------------------------------------------------------------------
 
 #include <cstdio>
+#include <glm/gtc/matrix_transform.hpp>
+#include "core/noise.hpp"
 #include "scene/world/chunk.hpp"
 
-Chunk::Chunk()
+inline int getCubeIndex(int x, int y, int z)
+{
+	return x + (y * CHUNK_LENGTH) + (z * CHUNK_LENGTH * CHUNK_WIDTH);
+}
+
+Chunk::Chunk() :
+	mCurrentIndex(0)
 {
 	// Note: A lot of memory.
 	const size_t memChunk = sizeof(Block) * CHUNK_LENGTH * CHUNK_WIDTH * CHUNK_HEIGHT;
@@ -38,6 +46,24 @@ Chunk::Chunk()
 
 	// Initialize all memory to the air type block.
 	memset(mBlocks, static_cast<uint8_t>(BlockType::eAIR), memChunk);
+
+	glGenBuffers(1, &mGL.mVBO);
+	glGenBuffers(1, &mGL.mIBO);
+
+	glGenVertexArrays(1, &mGL.mVAO);
+	glBindVertexArray(mGL.mVAO);
+
+	// The following state is captured by the bound vertex array.
+	// When we rebind the vertex array, this will all be implicitly
+	// bound by the driver.
+	{
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+
+		glBindBuffer(GL_ARRAY_BUFFER, mGL.mVBO);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mGL.mIBO);
+	}
+	glBindVertexArray(0);
 }
 
 Chunk::~Chunk()
@@ -47,9 +73,142 @@ Chunk::~Chunk()
 		free(mBlocks);
 		mBlocks = nullptr;
 	}
+
+	// free GL objects.
+	glDeleteBuffers(1, &mGL.mVBO);
+	glDeleteBuffers(1, &mGL.mIBO);
+	glDeleteVertexArrays(1, &mGL.mVAO);
+}
+
+void Chunk::genHeightMap()
+{
+	// First, start off by making height map.
+	for (int z = 0; z < CHUNK_WIDTH; ++z)
+	{
+		for (int x = 0; x < CHUNK_LENGTH; ++x)
+		{
+			double xOffset = double((mPosition.x / CHUNK_LENGTH) + double(x) / CHUNK_LENGTH) * 0.5;
+			double zOffset = double((mPosition.z / CHUNK_WIDTH) + double(z) / CHUNK_WIDTH) * 0.5;
+
+			// calc height and then scale it.
+			double height = Noise::get()->noise2(xOffset, zOffset);
+			int intHeight = int((((height + 1.0) / 2.0) * CHUNK_HEIGHT));
+			mHeightMap.push_back(intHeight);
+		}
+	}
+
+	genTerrain();
 }
 
 void Chunk::genTerrain()
 {
+	for (int z = 0; z < CHUNK_WIDTH; ++z)
+	{
+		for (int x = 0; x < CHUNK_LENGTH; ++x)
+		{
+			// Anything above height is air.
+			int height = mHeightMap[z + (x * CHUNK_WIDTH)];
+			int cubeIndex = getCubeIndex(x, height, z);
 
+			// height layer is grass. yeah.
+			mBlocks[cubeIndex].id = BlockType::eDIRT;
+
+			// everything else is dirt.
+			for (int y = height - 1; y >= 0; --y)
+			{
+				cubeIndex = getCubeIndex(x, y, z);
+				mBlocks[cubeIndex].id = BlockType::eCOBBLESTONE;
+			}
+		}
+	}
+
+	// Update visible mesh.
+	mVisibleMesh.clear();
+	mIndexData.clear();
+	mCurrentIndex = 0;
+
+#define isAir(_x, _y, _z) (mBlocks[getCubeIndex(_x, _y, _z)].id == BlockType::eAIR)
+
+	for (int z = 0; z < CHUNK_WIDTH; ++z)
+	{
+		for (int x = 0; x < CHUNK_LENGTH; ++x)
+		{
+			for (int y = CHUNK_HEIGHT; y >= 0; y--)
+			{
+				Block &block = mBlocks[getCubeIndex(x, y, z)];
+				if (block.id == BlockType::eAIR)
+					continue;
+
+				// Check all 6 sides to see if there is air.
+
+				// UP
+				if (isAir(x, y + 1, z))
+					_addFace(block, glm::vec3(x, y, z), CubeSides::eUP);
+
+				// DOWN
+				if (isAir(x, y - 1, z))
+					_addFace(block, glm::vec3(x, y, z), CubeSides::eDOWN);
+
+				// LEFT
+				if (isAir(x - 1, y, z))
+					_addFace(block, glm::vec3(x, y, z), CubeSides::eLEFT);
+
+				// RIGHT
+				if (isAir(x + 1, y, z))
+					_addFace(block, glm::vec3(x, y, z), CubeSides::eRIGHT);
+
+				// FRONT
+				if (isAir(x, y, z + 1))
+					_addFace(block, glm::vec3(x, y, z), CubeSides::eFRONT);
+
+				// BACK
+				if (isAir(x, y, z - 1))
+					_addFace(block, glm::vec3(x, y, z), CubeSides::eBACK);
+			}
+		}
+	}
+
+#undef isAir
+}
+
+void Chunk::_addFace(Block &block, const glm::vec3 &pos, const CubeSides &cubeSide)
+{
+	// 4 verts per face
+	for (int i = 0; i < 4; ++i)
+	{
+		CubeVert vert;
+		vert.pos = pos + sCubeFaceVertices[cubeSide][i].pos;
+		vert.normal = sCubeFaceVertices[cubeSide][i].normal;
+		vert.textureID = block.id;
+		mVisibleMesh.push_back(vert);
+	}
+
+	// 6 indices per face
+	for (int i = 0; i < 6; ++i)
+		mIndexData.push_back(sCubeFaceIndices[i] + mCurrentIndex);
+	mCurrentIndex += 4;
+}
+
+void Chunk::updateTerrainGL()
+{
+	glBindBuffer(GL_ARRAY_BUFFER, mGL.mVBO);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(CubeVert) * mVisibleMesh.size(), mVisibleMesh.data(), GL_STATIC_DRAW);
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mGL.mIBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint16_t) * mIndexData.size(), mIndexData.data(), GL_STATIC_DRAW);
+}
+
+extern GLuint modelLoc; // mvp uniform
+extern void checkGLErrors();
+
+void Chunk::render(const double &dt)
+{
+	glBindVertexArray(mGL.mVAO);
+	checkGLErrors();
+	glm::mat4 model(1.0f);
+	model = glm::translate(model, mPosition);
+	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
+	checkGLErrors();
+	glDrawElements(GL_TRIANGLES, mIndexData.size(), GL_UNSIGNED_SHORT, nullptr);
+	checkGLErrors();
 }

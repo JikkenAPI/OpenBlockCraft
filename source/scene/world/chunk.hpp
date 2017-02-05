@@ -25,12 +25,16 @@
 #ifndef _SCENE_WORLD_CHUNK_HPP_
 #define _SCENE_WORLD_CHUNK_HPP_
 
+#include <vector>
+#include <GL/glew.h>
 #include "scene/sceneObject.hpp"
 #include "scene/world/block.hpp"
+#include "core/geometry/cube.hpp"
 
 const int CHUNK_LENGTH = 16;
 const int CHUNK_WIDTH = 16;
 const int CHUNK_HEIGHT = 256;
+const int CHUNK_RENDER_HEIGHT = 16;
 
 class Chunk : public SceneObject
 {
@@ -38,11 +42,30 @@ public:
 	Chunk();
 	virtual ~Chunk();
 
+	void genHeightMap();
 	void genTerrain();
+	void updateTerrainGL();
+
+	void render(const double &dt);
 
 protected:
 	// This will allocate a page of memory that is 16x256x16 Block
 	Block *mBlocks;
+
+	std::vector<int> mHeightMap;
+
+	std::vector<CubeVert> mVisibleMesh;
+	std::vector<uint16_t> mIndexData;
+	uint16_t mCurrentIndex;
+
+	void _addFace(Block &block, const glm::vec3 &pos, const CubeSides &cubeSide);
+
+	struct
+	{
+		GLuint mVAO;
+		GLuint mVBO;
+		GLuint mIBO;
+	} mGL;
 };
 
 #endif
