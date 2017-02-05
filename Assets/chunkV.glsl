@@ -20,5 +20,10 @@ uniform mat4 model;
 void main()
 {
    gl_Position = proj * view * model * vec4(vertex.xyz, 1.0);
-   vertexNormal = mat3(transpose(inverse(model))) * normals[floatBitsToInt(vertex.w)].xyz;
+
+   int data = floatBitsToInt(vertex.w);
+   int normalIndex = (data >> 16) & 0xFFFF;
+   int textureIndex = data & 0xFFFF;
+
+   vertexNormal = mat3(transpose(inverse(model))) * normals[normalIndex].xyz;
 }

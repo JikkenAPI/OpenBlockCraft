@@ -39,6 +39,12 @@ glm::vec4 sCubeFaceNormals[6] = {
 struct CubeVert
 {
 	glm::vec3 pos;
+	struct
+	{
+		uint16_t normal;
+		uint16_t textureID = 0;
+	};
+};
 	int normal;
 };
 
