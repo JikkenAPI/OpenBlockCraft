@@ -25,6 +25,12 @@
 #ifndef _SCENE_WORLD_BLOCK_HPP_
 #define _SCENE_WORLD_BLOCK_HPP_
 
+enum class RenderPass
+{
+	eGEOMETRY = 0,
+	eTRANSLUCENT = 1
+};
+
 struct Block
 {
 	uint8_t id;

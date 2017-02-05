@@ -100,6 +100,8 @@ void initGL()
 	checkGLErrors();
 	glEnable(GL_CULL_FACE);
 	glCullFace(GL_BACK);
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	// create shaders
 	{
@@ -130,6 +132,20 @@ void initGL()
 		glAttachShader(program, f);
 		checkGLErrors();
 		glLinkProgram(program);
+
+		GLint linked;
+		glGetProgramiv(program, GL_LINK_STATUS, &linked);
+		if (!linked)
+		{
+			GLint len;
+			glGetProgramiv(program, GL_INFO_LOG_LENGTH, &len);
+			char *msg = new char[len + 1];
+			memset(msg, 0, sizeof(char) * (len + 1));
+			glGetProgramInfoLog(program, len, &len, msg);
+			printf("GL Link Issue: %s\n", msg);
+			delete[] msg;
+		}
+
 		checkGLErrors();
 	}
 
@@ -195,13 +211,15 @@ void render(Camera *camera, double dt)
 	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), &view[0][0]);
 	checkGLErrors();
 
-	chunkManager->render(dt);
+	// Geometry pass first, then translucent.
+	chunkManager->render(RenderPass::eGEOMETRY, dt);
+	chunkManager->render(RenderPass::eTRANSLUCENT, dt);
 }
 
 void createChunks()
 {
 	// spawn a chunk
-	const int grid = 16;
+	const int grid = 8;
 	for (int x = -CHUNK_LENGTH * grid; x < CHUNK_LENGTH * grid; x += CHUNK_LENGTH)
 	{
 		for (int z = -CHUNK_WIDTH * grid; z < CHUNK_WIDTH * grid; z += CHUNK_WIDTH)

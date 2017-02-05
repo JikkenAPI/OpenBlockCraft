@@ -46,11 +46,11 @@ void ChunkManager::createChunkAtPosition(const glm::vec3 &pos)
 	mChunks.push_back(chunk);
 }
 
-void ChunkManager::render(const double &dt)
+void ChunkManager::render(RenderPass pass, const double &dt)
 {
 	// TODO: Frustrum Culling.
 	for (Chunk *chunk : mChunks)
-		chunk->render(dt);
+		chunk->render(pass, dt);
 }
 
 const std::vector<Chunk*>& ChunkManager::getChunks() const

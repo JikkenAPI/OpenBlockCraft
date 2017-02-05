@@ -32,15 +32,14 @@ const int WATER_HEIGHT = 60;
 
 const int MAX_LAND_HEIGHT_FROM_WATER_SURFACE = 48;
 
-const int LAND_HEIGHT_BELOW_WATER = 5;
+const int LAND_HEIGHT_BELOW_WATER = 10;
 
 inline int getCubeIndex(int x, int y, int z)
 {
 	return x + (z * CHUNK_LENGTH) + (y * CHUNK_LENGTH * CHUNK_WIDTH);
 }
 
-Chunk::Chunk() :
-	mCurrentIndex(0)
+Chunk::Chunk()
 {
 	// Note: A lot of memory.
 	const size_t memChunk = sizeof(Block) * CHUNK_LENGTH * CHUNK_WIDTH * CHUNK_HEIGHT;
@@ -54,23 +53,29 @@ Chunk::Chunk() :
 	// Initialize all memory to the air type block.
 	memset(mBlocks, static_cast<uint8_t>(BlockType::eAIR), memChunk);
 
-	glGenBuffers(1, &mGL.mVBO);
-	glGenBuffers(1, &mGL.mIBO);
-
-	glGenVertexArrays(1, &mGL.mVAO);
-	glBindVertexArray(mGL.mVAO);
-
-	// The following state is captured by the bound vertex array.
-	// When we rebind the vertex array, this will all be implicitly
-	// bound by the driver.
+	// we have 2 passes. rip me.
+	for (int i = 0; i < 2; i++)
 	{
-		glBindBuffer(GL_ARRAY_BUFFER, mGL.mVBO);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mGL.mIBO);
+		mGL[i].mCurrentIndex = 0;
 
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+		glGenBuffers(1, &mGL[i].mVBO);
+		glGenBuffers(1, &mGL[i].mIBO);
+
+		glGenVertexArrays(1, &mGL[i].mVAO);
+		glBindVertexArray(mGL[i].mVAO);
+
+		// The following state is captured by the bound vertex array.
+		// When we rebind the vertex array, this will all be implicitly
+		// bound by the driver.
+		{
+			glBindBuffer(GL_ARRAY_BUFFER, mGL[i].mVBO);
+			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mGL[i].mIBO);
+
+			glEnableVertexAttribArray(0);
+			glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
+		}
+		glBindVertexArray(0);
 	}
-	glBindVertexArray(0);
 }
 
 Chunk::~Chunk()
@@ -82,9 +87,12 @@ Chunk::~Chunk()
 	}
 
 	// free GL objects.
-	glDeleteBuffers(1, &mGL.mVBO);
-	glDeleteBuffers(1, &mGL.mIBO);
-	glDeleteVertexArrays(1, &mGL.mVAO);
+	for (int i = 0; i < 2; i++)
+	{
+		glDeleteBuffers(1, &mGL[i].mVBO);
+		glDeleteBuffers(1, &mGL[i].mIBO);
+		glDeleteVertexArrays(1, &mGL[i].mVAO);
+	}
 }
 
 void Chunk::genHeightMap()
@@ -94,8 +102,8 @@ void Chunk::genHeightMap()
 	{
 		for (int x = 0; x < CHUNK_LENGTH; ++x)
 		{
-			double xOffset = double((mPosition.x / CHUNK_LENGTH) + double(x) / CHUNK_LENGTH) * 0.5;
-			double zOffset = double((mPosition.z / CHUNK_WIDTH) + double(z) / CHUNK_WIDTH) * 0.5;
+			double xOffset = double((mPosition.x / CHUNK_LENGTH) + double(x) / CHUNK_LENGTH) * 0.25;
+			double zOffset = double((mPosition.z / CHUNK_WIDTH) + double(z) / CHUNK_WIDTH) * 0.25;
 
 			// calc height and then scale it.
 			double height = Noise::get()->noise2(xOffset, zOffset);
@@ -109,6 +117,16 @@ void Chunk::genHeightMap()
 
 void Chunk::genTerrain()
 {
+	// first, set water to every block at water height.
+	// it will fill in on next pass.
+	for (int z = 0; z < CHUNK_WIDTH; ++z)
+	{
+		for (int x = 0; x < CHUNK_LENGTH; ++x)
+		{
+			mBlocks[getCubeIndex(x, WATER_HEIGHT, z)].id = BlockType::eWATER;
+		}
+	}
+
 	for (int z = 0; z < CHUNK_WIDTH; ++z)
 	{
 		for (int x = 0; x < CHUNK_LENGTH; ++x)
@@ -130,11 +148,9 @@ void Chunk::genTerrain()
 	}
 
 	// Update visible mesh.
-	mVisibleMesh.clear();
-	mIndexData.clear();
-	mCurrentIndex = 0;
-
-#define isAir(_x, _y, _z) (mBlocks[getCubeIndex(_x, _y, _z)].id == BlockType::eAIR)
+	mGL[0].mVisibleMesh.clear();
+	mGL[0].mIndexData.clear();
+	mGL[0].mCurrentIndex = 0;
 
 	for (int z = 0; z < CHUNK_WIDTH; ++z)
 	{
@@ -143,42 +159,71 @@ void Chunk::genTerrain()
 			for (int y = 0; y < CHUNK_HEIGHT; ++y)
 			{
 				Block &block = mBlocks[getCubeIndex(x, y, z)];
-				if (block.id == BlockType::eAIR)
+				if (_isTranslucent(x, y, z))
 					continue;
 
-				// Check all 6 sides to see if there is air.
+				// Check all 6 sides to see if there is a translucent material.
 
 				// UP
-				if ((y + 1) == CHUNK_HEIGHT || isAir(x, y + 1, z))
-					_addFace(block, glm::vec3(x, y, z), CubeSides::eUP);
+				if ((y + 1) == CHUNK_HEIGHT || _isTranslucent(x, y + 1, z))
+					_addFace(0, block, glm::vec3(x, y, z), CubeSides::eUP);
 
 				// DOWN
-				if ((y - 1) == -1 || isAir(x, y - 1, z))
-					_addFace(block, glm::vec3(x, y, z), CubeSides::eDOWN);
+				if ((y - 1) == -1 || _isTranslucent(x, y - 1, z))
+					_addFace(0, block, glm::vec3(x, y, z), CubeSides::eDOWN);
 
 				// LEFT
-				if ((x - 1) == -1 || isAir(x - 1, y, z))
-					_addFace(block, glm::vec3(x, y, z), CubeSides::eLEFT);
+				if ((x - 1) == -1 || _isTranslucent(x - 1, y, z))
+					_addFace(0, block, glm::vec3(x, y, z), CubeSides::eLEFT);
 
 				// RIGHT
-				if ((x + 1) == CHUNK_LENGTH || isAir(x + 1, y, z))
-					_addFace(block, glm::vec3(x, y, z), CubeSides::eRIGHT);
+				if ((x + 1) == CHUNK_LENGTH || _isTranslucent(x + 1, y, z))
+					_addFace(0, block, glm::vec3(x, y, z), CubeSides::eRIGHT);
 
 				// FRONT
-				if ((z + 1) == CHUNK_WIDTH || isAir(x, y, z + 1))
-					_addFace(block, glm::vec3(x, y, z), CubeSides::eFRONT);
+				if ((z + 1) == CHUNK_WIDTH || _isTranslucent(x, y, z + 1))
+					_addFace(0, block, glm::vec3(x, y, z), CubeSides::eFRONT);
 
 				// BACK
-				if ((z - 1) == -1 || isAir(x, y, z - 1))
-					_addFace(block, glm::vec3(x, y, z), CubeSides::eBACK);
+				if ((z - 1) == -1 || _isTranslucent(x, y, z - 1))
+					_addFace(0, block, glm::vec3(x, y, z), CubeSides::eBACK);
 			}
 		}
 	}
 
-#undef isAir
+	// Now, we fill the water buffer with data.
+	// for now we just do the top layer of the water, not the sides.
+	mGL[1].mVisibleMesh.clear();
+	mGL[1].mIndexData.clear();
+	mGL[1].mCurrentIndex = 0;
+
+	for (int z = 0; z < CHUNK_WIDTH; ++z)
+	{
+		for (int x = 0; x < CHUNK_LENGTH; ++x)
+		{
+			Block &block = mBlocks[getCubeIndex(x, WATER_HEIGHT, z)];
+
+			// If the block already has something, no water!
+			if (block.id != BlockType::eWATER)
+				continue;
+
+			// Make it water baby!
+			_addFace(1, block, glm::vec3(x, WATER_HEIGHT, z), CubeSides::eUP);
+		}
+	}
 }
 
-void Chunk::_addFace(Block &block, const glm::vec3 &pos, const CubeSides &cubeSide)
+bool Chunk::_isTranslucent(int x, int y, int z)
+{
+	uint8_t type = mBlocks[getCubeIndex(x, y, z)].id;
+	if (type == BlockType::eAIR)
+		return true;
+	if (type == BlockType::eWATER)
+		return true;
+	return false;
+}
+
+void Chunk::_addFace(int pass, Block &block, const glm::vec3 &pos, const CubeSides &cubeSide)
 {
 	// 4 verts per face
 	for (int i = 0; i < 4; ++i)
@@ -187,34 +232,39 @@ void Chunk::_addFace(Block &block, const glm::vec3 &pos, const CubeSides &cubeSi
 		vert.pos = pos + sCubeFaceVertices[cubeSide][i].pos;
 		vert.normal = sCubeFaceVertices[cubeSide][i].normal;
 		vert.textureID = block.id;
-		mVisibleMesh.push_back(vert);
+		mGL[pass].mVisibleMesh.push_back(vert);
 	}
 
 	// 6 indices per face
 	for (int i = 0; i < 6; ++i)
-		mIndexData.push_back(sCubeFaceIndices[i] + mCurrentIndex);
-	mCurrentIndex += 4;
+		mGL[pass].mIndexData.push_back(sCubeFaceIndices[i] + mGL[pass].mCurrentIndex);
+	mGL[pass].mCurrentIndex += 4;
 }
 
 void Chunk::updateTerrainGL()
 {
-	glBindBuffer(GL_ARRAY_BUFFER, mGL.mVBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(CubeVert) * mVisibleMesh.size(), mVisibleMesh.data(), GL_STATIC_DRAW);
+	for (int i = 0; i < 2; i++)
+	{
+		glBindBuffer(GL_ARRAY_BUFFER, mGL[i].mVBO);
+		glBufferData(GL_ARRAY_BUFFER, sizeof(CubeVert) * mGL[i].mVisibleMesh.size(), mGL[i].mVisibleMesh.data(), GL_STATIC_DRAW);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mGL.mIBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint16_t) * mIndexData.size(), mIndexData.data(), GL_STATIC_DRAW);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mGL[i].mIBO);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint16_t) * mGL[i].mIndexData.size(), mGL[i].mIndexData.data(), GL_STATIC_DRAW);
+	}
 }
 
 extern GLuint modelLoc; // mvp uniform
 extern void checkGLErrors();
 
-void Chunk::render(const double &dt)
+void Chunk::render(RenderPass pass, const double &dt)
 {
-	glBindVertexArray(mGL.mVAO);
+	int renderPass = (pass == RenderPass::eGEOMETRY) ? 0 : 1;
+
+	glBindVertexArray(mGL[renderPass].mVAO);
 
 	glm::mat4 model(1.0f);
 	model = glm::translate(model, mPosition);
 	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
 
-	glDrawElements(GL_TRIANGLES, mIndexData.size(), GL_UNSIGNED_SHORT, nullptr);
+	glDrawElements(GL_TRIANGLES, mGL[renderPass].mIndexData.size(), GL_UNSIGNED_SHORT, nullptr);
 }

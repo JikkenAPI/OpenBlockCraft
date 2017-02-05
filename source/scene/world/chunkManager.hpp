@@ -36,7 +36,7 @@ public:
 
 	void createChunkAtPosition(const glm::vec3 &pos);
 
-	void render(const double &dt);
+	void render(RenderPass pass, const double &dt);
 
 	const std::vector<Chunk*>& getChunks() const;
 

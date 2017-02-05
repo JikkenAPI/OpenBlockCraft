@@ -45,7 +45,7 @@ public:
 	void genTerrain();
 	void updateTerrainGL();
 
-	void render(const double &dt);
+	void render(RenderPass pass, const double &dt);
 
 protected:
 	// This will allocate a page of memory that is 16x256x16 Block
@@ -53,18 +53,23 @@ protected:
 
 	std::vector<int> mHeightMap;
 
-	std::vector<CubeVert> mVisibleMesh;
-	std::vector<uint16_t> mIndexData;
-	uint16_t mCurrentIndex;
+	bool _isTranslucent(int x, int y, int z);
 
-	void _addFace(Block &block, const glm::vec3 &pos, const CubeSides &cubeSide);
+	void _addFace(int pass, Block &block, const glm::vec3 &pos, const CubeSides &cubeSide);
 
-	struct
+	struct GL
 	{
 		GLuint mVAO;
 		GLuint mVBO;
 		GLuint mIBO;
-	} mGL;
+
+		std::vector<CubeVert> mVisibleMesh;
+		std::vector<uint16_t> mIndexData;
+
+		uint16_t mCurrentIndex;
+	};
+
+	GL mGL[2];
 };
 
 #endif

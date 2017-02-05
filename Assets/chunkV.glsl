@@ -3,6 +3,7 @@
 layout(location = 0) in vec4 vertex;
 
 out vec3 vertexNormal;
+flat out float vertexTextureIndex;
 
 layout(std140) uniform Camera
 {
@@ -26,4 +27,5 @@ void main()
    int textureIndex = (data >> 16) & 0xFFFF;
 
    vertexNormal = mat3(transpose(inverse(model))) * normals[normalIndex].xyz;
+   vertexTextureIndex = float(textureIndex);
 }
