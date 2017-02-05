@@ -148,6 +148,8 @@ void Chunk::genVisibleGeometry()
 	// Update visible mesh.
 	mGL[0].mVisibleMesh.clear();
 	mGL[0].mIndexData.clear();
+	mGL[0].mVisibleMesh.reserve(16384);
+	mGL[0].mIndexData.reserve(16384);
 	mGL[0].mCurrentIndex = 0;
 
 	for (int z = 0; z < CHUNK_WIDTH; ++z)
@@ -193,6 +195,8 @@ void Chunk::genVisibleGeometry()
 	// for now we just do the top layer of the water, not the sides.
 	mGL[1].mVisibleMesh.clear();
 	mGL[1].mIndexData.clear();
+	mGL[1].mVisibleMesh.reserve(16384);
+	mGL[1].mIndexData.reserve(16384);
 	mGL[1].mCurrentIndex = 0;
 
 	for (int z = 0; z < CHUNK_WIDTH; ++z)
@@ -257,6 +261,11 @@ extern void checkGLErrors();
 void Chunk::render(RenderPass pass, const double &dt)
 {
 	int renderPass = (pass == RenderPass::eGEOMETRY) ? 0 : 1;
+	if (mGL[renderPass].mIndexData.size() == 0)
+	{
+		//printf("pass %d has 0 data! We can save from rendering this!\n");
+		return;
+	}
 
 	glBindVertexArray(mGL[renderPass].mVAO);
 

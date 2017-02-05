@@ -175,7 +175,7 @@ void initGL()
 	checkGLErrors();
 
 	{
-		SunUBOData.direction = glm::vec4(-0.2f, -1.0f, -3.0f, 0.0f);
+		SunUBOData.direction = glm::vec4(0.0f, -1.0f, 0.0f, 0.0f);
 		SunUBOData.ambient = glm::vec4(0.1f, 0.1f, 0.1f, 0.0f);
 		SunUBOData.diffuse = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -219,7 +219,7 @@ void render(Camera *camera, double dt)
 void createChunks()
 {
 	// spawn a chunk
-	const int grid = 8;
+	const int grid = 12;
 	for (int x = -CHUNK_LENGTH * grid; x < CHUNK_LENGTH * grid; x += CHUNK_LENGTH)
 	{
 		for (int z = -CHUNK_WIDTH * grid; z < CHUNK_WIDTH * grid; z += CHUNK_WIDTH)
