@@ -41,8 +41,8 @@ public:
 	Chunk();
 	virtual ~Chunk();
 
-	void genHeightMap();
 	void genTerrain();
+	void genVisibleGeometry();
 	void updateTerrainGL();
 
 	void render(RenderPass pass, const double &dt);

@@ -95,7 +95,7 @@ Chunk::~Chunk()
 	}
 }
 
-void Chunk::genHeightMap()
+void Chunk::genTerrain()
 {
 	// First, start off by making height map.
 	for (int z = 0; z < CHUNK_WIDTH; ++z)
@@ -112,12 +112,7 @@ void Chunk::genHeightMap()
 		}
 	}
 
-	genTerrain();
-}
-
-void Chunk::genTerrain()
-{
-	// first, set water to every block at water height.
+	// Then, set water to every block at water height.
 	// it will fill in on next pass.
 	for (int z = 0; z < CHUNK_WIDTH; ++z)
 	{
@@ -146,7 +141,10 @@ void Chunk::genTerrain()
 			}
 		}
 	}
+}
 
+void Chunk::genVisibleGeometry()
+{
 	// Update visible mesh.
 	mGL[0].mVisibleMesh.clear();
 	mGL[0].mIndexData.clear();
