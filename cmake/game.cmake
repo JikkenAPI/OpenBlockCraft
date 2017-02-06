@@ -2,6 +2,8 @@ set (GAME_SOURCE
 	source/core/geometry/cube.hpp
 	source/core/file.cpp
 	source/core/file.hpp
+	source/core/frustrum.cpp
+	source/core/frustrum.hpp
 	source/core/noise.cpp
 	source/core/noise.hpp
 	source/core/singleton.hpp
