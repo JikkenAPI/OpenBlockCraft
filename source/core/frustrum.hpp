@@ -29,6 +29,7 @@
 
 class Frustrum
 {
+public:
 	enum PlaneID
 	{
 		eRIGHT = 0,
@@ -39,13 +40,12 @@ class Frustrum
 		eNEAR
 	};
 
-public:
 	Frustrum();
 	~Frustrum();
 
 	void setVP(const glm::mat4 &view, const glm::mat4 &proj);
 
-	const glm::vec4 & getNormalizedPlane(int index) const;
+	const glm::vec4 & getNormalizedPlane(PlaneID index) const;
 
 	bool checkPoint(const glm::vec3 &point) const;
 

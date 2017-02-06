@@ -93,14 +93,8 @@ void Frustrum::setVP(const glm::mat4 &view, const glm::mat4 &proj)
 	}
 }
 
-const glm::vec4& Frustrum::getNormalizedPlane(int index) const
+const glm::vec4& Frustrum::getNormalizedPlane(Frustrum::PlaneID index) const
 {
-#ifdef _DEBUG
-	if (index < 0 || index > 5)
-	{
-		assert(false);
-	}
-#endif
 	return mPlanes[index];
 }
 
