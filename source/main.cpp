@@ -22,6 +22,7 @@
 // SOFTWARE.
 //-----------------------------------------------------------------------------
 
+#include <thread>
 #include <cstdlib>
 #include <string>
 #include <GL/glew.h>
@@ -223,7 +224,7 @@ void createChunks()
 	std::vector<Chunk*> chunks;
 
 	// spawn chunks.
-	const int grid = 4;
+	const int grid = 16;
 	for (int x = -CHUNK_LENGTH * grid; x < CHUNK_LENGTH * grid; x += CHUNK_LENGTH)
 	{
 		for (int z = -CHUNK_WIDTH * grid; z < CHUNK_WIDTH * grid; z += CHUNK_WIDTH)
@@ -236,10 +237,34 @@ void createChunks()
 		}
 	}
 
+	const int NUM_THREADS = 8;
+
 	// now generate geometry for each chunk.
+	std::vector<Chunk*> chunksss[NUM_THREADS];
+	int i = 0;
 	for (Chunk *c : chunks)
 	{
-		c->genVisibleGeometry();
+		chunksss[++i % NUM_THREADS].push_back(c);
+	}
+	
+	std::vector<std::thread*> threads;
+	for (int i = 0; i < NUM_THREADS; ++i)
+	{
+		std::thread *thr = new std::thread([](std::vector<Chunk*> &ch)
+		{
+			for (Chunk * cccc : ch)
+			{
+				cccc->genVisibleGeometry();
+			}
+		}, chunksss[i]);
+		threads.push_back(thr);
+	}
+
+	// wait to finish.
+	for (std::thread *thr : threads)
+	{
+		thr->join();
+		delete thr;
 	}
 
 	// upload to GL
