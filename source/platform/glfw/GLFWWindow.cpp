@@ -46,8 +46,10 @@ static void APIENTRY debugGLCb(GLenum source, GLenum type, GLuint id, GLenum sev
 }
 #endif
 
-GLFWWindow::GLFWWindow(int width, int height, API graphicsApi) 
+GLFWWindow::GLFWWindow(int width, int height, API graphicsApi)
 {
+	mVsync = false;
+
 	// set what kind of graphics we will need.
 	if (graphicsApi == API::eOPENGL)
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
@@ -74,7 +76,7 @@ GLFWWindow::GLFWWindow(int width, int height, API graphicsApi)
 	if (graphicsApi == API::eOPENGL)
 	{
 		glfwMakeContextCurrent(mWindow);
-		glfwSwapInterval(0);
+		glfwSwapInterval(mVsync);
 
 		// start up glew
 		if (glewInit() != GLEW_OK)
@@ -116,4 +118,10 @@ void GLFWWindow::toggleCursor()
 {
 	mCursorShowing = !mCursorShowing;
 	glfwSetInputMode(mWindow, GLFW_CURSOR, mCursorShowing ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
+}
+
+void GLFWWindow::toggleVerticalSync()
+{
+	mVsync = !mVsync;
+	glfwSwapInterval(mVsync);
 }

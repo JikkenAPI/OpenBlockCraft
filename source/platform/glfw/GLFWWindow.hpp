@@ -53,6 +53,8 @@ public:
 
 	virtual void toggleCursor() override;
 
+	virtual void toggleVerticalSync() override;
+
 private:
 	GLFWwindow *mWindow;
 	bool mCursorShowing = true;
