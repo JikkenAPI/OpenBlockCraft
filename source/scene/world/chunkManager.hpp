@@ -41,6 +41,10 @@ public:
 
 	const std::vector<Chunk*>& getChunks() const;
 
+	Chunk* getChunkAtPos(const glm::vec3 &pos);
+
+	void addChunk(Chunk *chunk) { mChunks.push_back(chunk); }
+
 private:
 	std::vector<Chunk*> mChunks;
 	Frustrum mFrustrum;

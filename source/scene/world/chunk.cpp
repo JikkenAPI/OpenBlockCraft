@@ -27,6 +27,10 @@
 #include <cstdlib>
 #include "core/noise.hpp"
 #include "scene/world/chunk.hpp"
+#include "scene/world/chunkManager.hpp"
+
+// temp
+extern ChunkManager *chunkManager;
 
 const int WATER_HEIGHT = 60;
 
@@ -152,6 +156,8 @@ void Chunk::genVisibleGeometry()
 	mGL[0].mIndexData.reserve(16384);
 	mGL[0].mCurrentIndex = 0;
 
+	const std::vector<Chunk*> &chunks = chunkManager->getChunks();
+
 	for (int z = 0; z < CHUNK_WIDTH; ++z)
 	{
 		for (int x = 0; x < CHUNK_LENGTH; ++x)
@@ -173,20 +179,81 @@ void Chunk::genVisibleGeometry()
 					_addFace(0, block, glm::vec3(x, y, z), CubeSides::eDOWN);
 
 				// LEFT
-				if ((x - 1) == -1 || _isTranslucent(x - 1, y, z))
+				if ((x - 1) == -1)
+				{
+					glm::vec3 searchPos = mPosition - glm::vec3(CHUNK_LENGTH, 0.0f, 0.0f);
+					Chunk *chunk = chunkManager->getChunkAtPos(searchPos);
+					if (chunk != nullptr)
+					{
+						if (chunk->_isTranslucent(CHUNK_LENGTH - 1, y, z))
+						{
+							// The chunk to the left is translucent, we have to add this face!
+							_addFace(0, block, glm::vec3(x, y, z), CubeSides::eLEFT);
+						}
+					}
+				}
+				else if (_isTranslucent(x - 1, y, z))
+				{
+					// It is translucent.
 					_addFace(0, block, glm::vec3(x, y, z), CubeSides::eLEFT);
+				}
 
 				// RIGHT
-				if ((x + 1) == CHUNK_LENGTH || _isTranslucent(x + 1, y, z))
+				if ((x + 1) == CHUNK_LENGTH)
+				{
+					glm::vec3 searchPos = mPosition + glm::vec3(CHUNK_LENGTH, 0.0f, 0.0f);
+					Chunk *chunk = chunkManager->getChunkAtPos(searchPos);
+					if (chunk != nullptr)
+					{
+						if (chunk->_isTranslucent(0, y, z))
+						{
+							// The chunk to the left is translucent, we have to add this face!
+							_addFace(0, block, glm::vec3(x, y, z), CubeSides::eRIGHT);
+						}
+					}
+				}
+				else if (_isTranslucent(x + 1, y, z))
+				{
 					_addFace(0, block, glm::vec3(x, y, z), CubeSides::eRIGHT);
+				}
 
 				// FRONT
-				if ((z + 1) == CHUNK_WIDTH || _isTranslucent(x, y, z + 1))
+				if ((z + 1) == CHUNK_WIDTH)
+				{
+					glm::vec3 searchPos = mPosition + glm::vec3(0.0f, 0.0f, CHUNK_WIDTH);
+					Chunk *chunk = chunkManager->getChunkAtPos(searchPos);
+					if (chunk != nullptr)
+					{
+						if (chunk->_isTranslucent(x, y, 0))
+						{
+							// The chunk to the left is translucent, we have to add this face!
+							_addFace(0, block, glm::vec3(x, y, z), CubeSides::eFRONT);
+						}
+					}
+				}
+				else if (_isTranslucent(x, y, z + 1))
+				{
 					_addFace(0, block, glm::vec3(x, y, z), CubeSides::eFRONT);
+				}
 
 				// BACK
-				if ((z - 1) == -1 || _isTranslucent(x, y, z - 1))
+				if ((z - 1) == -1)
+				{
+					glm::vec3 searchPos = mPosition - glm::vec3(0.0f, 0.0f, CHUNK_WIDTH);
+					Chunk *chunk = chunkManager->getChunkAtPos(searchPos);
+					if (chunk != nullptr)
+					{
+						if (chunk->_isTranslucent(x, y, CHUNK_WIDTH - 1))
+						{
+							// The chunk to the left is translucent, we have to add this face!
+							_addFace(0, block, glm::vec3(x, y, z), CubeSides::eBACK);
+						}
+					}
+				}
+				else if (_isTranslucent(x, y, z - 1))
+				{
 					_addFace(0, block, glm::vec3(x, y, z), CubeSides::eBACK);
+				}
 			}
 		}
 	}

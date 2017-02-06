@@ -47,6 +47,7 @@ ChunkManager::~ChunkManager()
 
 void ChunkManager::createChunkAtPosition(const glm::vec3 &pos)
 {
+	/*
 	Chunk *chunk = new Chunk();
 	chunk->setPosition(pos);
 	
@@ -57,6 +58,7 @@ void ChunkManager::createChunkAtPosition(const glm::vec3 &pos)
 	// Operate this on a callback on main thread system.
 	chunk->updateTerrainGL();
 	mChunks.push_back(chunk);
+	*/
 }
 
 void ChunkManager::render(const glm::mat4 &viewMatrix, const glm::mat4 &projMatrix, RenderPass pass, const double &dt)
@@ -83,4 +85,18 @@ void ChunkManager::render(const glm::mat4 &viewMatrix, const glm::mat4 &projMatr
 const std::vector<Chunk*>& ChunkManager::getChunks() const
 {
 	return mChunks;
+}
+
+Chunk* ChunkManager::getChunkAtPos(const glm::vec3 &pos)
+{
+	Chunk *chunk = nullptr;
+	for (Chunk *c : mChunks)
+	{
+		if (c->getPosition() == pos)
+		{
+			chunk = c;
+			break;
+		}
+	}
+	return chunk;
 }

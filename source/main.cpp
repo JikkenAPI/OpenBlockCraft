@@ -220,14 +220,32 @@ void render(Camera *camera, double dt)
 
 void createChunks()
 {
-	// spawn a chunk
-	const int grid = 8;
+	std::vector<Chunk*> chunks;
+
+	// spawn chunks.
+	const int grid = 4;
 	for (int x = -CHUNK_LENGTH * grid; x < CHUNK_LENGTH * grid; x += CHUNK_LENGTH)
 	{
 		for (int z = -CHUNK_WIDTH * grid; z < CHUNK_WIDTH * grid; z += CHUNK_WIDTH)
 		{
-			chunkManager->createChunkAtPosition(glm::vec3(x, 0, z));
+			Chunk *chunk = new Chunk();
+			chunk->setPosition(glm::vec3(x, 0, z));
+			chunk->genTerrain();
+			chunks.push_back(chunk);
+			chunkManager->addChunk(chunk);
 		}
+	}
+
+	// now generate geometry for each chunk.
+	for (Chunk *c : chunks)
+	{
+		c->genVisibleGeometry();
+	}
+
+	// upload to GL
+	for (Chunk *c : chunks)
+	{
+		c->updateTerrainGL();
 	}
 }
 
