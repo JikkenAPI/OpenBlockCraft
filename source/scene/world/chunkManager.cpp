@@ -73,7 +73,7 @@ void ChunkManager::render(const glm::mat4 &viewMatrix, const glm::mat4 &projMatr
 		glm::vec3 midPoint = chunk->getPosition() + size;
 
 		// Perform frustrum culling first. If it is inside the frustrum, go ahead and render it.
-		//if (mFrustrum.checkCubeFAST(midPoint, size))
+		if (mFrustrum.checkCubeFAST(midPoint, size))
 		{
 			chunk->render(pass, dt);
 		}

@@ -44,8 +44,8 @@ Frustrum::~Frustrum()
 
 void Frustrum::setVP(const glm::mat4 &view, const glm::mat4 &proj)
 {
-	glm::mat4 vp = view * proj;
-	float *clip = &vp[0][0];
+	glm::mat4 pv = proj * view;
+	float *clip = &pv[0][0];
 
 	// Set each plane.
 	mPlanes[PlaneID::eRIGHT].x = clip[3] - clip[0];
