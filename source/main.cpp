@@ -47,6 +47,8 @@ GLuint modelLoc; // mvp uniform
 
 ChunkManager *chunkManager = nullptr;
 
+glm::mat4 proj; // proj matrix
+
 const int UBO_CAMERA_LOCATION = 0;
 const int UBO_NORMALS_LOCATION = 1;
 const int UBO_SUN_LOCATION = 2;
@@ -189,7 +191,7 @@ void initGL()
 	}
 
 	// bind proj matrix since it doesn't change yet :)
-	glm::mat4 proj = glm::perspective(90.0f, 1440.0f / 900.0f, 0.1f, 500.0f);
+	proj = glm::perspective(90.0f, 1440.0f / 900.0f, 0.1f, 500.0f);
 	glBindBuffer(GL_UNIFORM_BUFFER, ubo);
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), &proj[0][0]);
 	checkGLErrors();
@@ -212,14 +214,14 @@ void render(Camera *camera, double dt)
 	checkGLErrors();
 
 	// Geometry pass first, then translucent.
-	chunkManager->render(RenderPass::eGEOMETRY, dt);
-	chunkManager->render(RenderPass::eTRANSLUCENT, dt);
+	chunkManager->render(view, proj, RenderPass::eGEOMETRY, dt);
+	chunkManager->render(view, proj, RenderPass::eTRANSLUCENT, dt);
 }
 
 void createChunks()
 {
 	// spawn a chunk
-	const int grid = 12;
+	const int grid = 8;
 	for (int x = -CHUNK_LENGTH * grid; x < CHUNK_LENGTH * grid; x += CHUNK_LENGTH)
 	{
 		for (int z = -CHUNK_WIDTH * grid; z < CHUNK_WIDTH * grid; z += CHUNK_WIDTH)

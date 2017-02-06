@@ -59,11 +59,25 @@ void ChunkManager::createChunkAtPosition(const glm::vec3 &pos)
 	mChunks.push_back(chunk);
 }
 
-void ChunkManager::render(RenderPass pass, const double &dt)
+void ChunkManager::render(const glm::mat4 &viewMatrix, const glm::mat4 &projMatrix, RenderPass pass, const double &dt)
 {
-	// TODO: Frustrum Culling.
+	if (mChunks.size() == 0)
+		return;
+
+	// Update frustrum
+	mFrustrum.setVP(viewMatrix, projMatrix);
+
 	for (Chunk *chunk : mChunks)
-		chunk->render(pass, dt);
+	{
+		glm::vec3 size = glm::vec3(CHUNK_LENGTH, CHUNK_HEIGHT, CHUNK_WIDTH) / 2.0f;
+		glm::vec3 midPoint = chunk->getPosition() + size;
+
+		// Perform frustrum culling first. If it is inside the frustrum, go ahead and render it.
+		//if (mFrustrum.checkCubeFAST(midPoint, size))
+		{
+			chunk->render(pass, dt);
+		}
+	}
 }
 
 const std::vector<Chunk*>& ChunkManager::getChunks() const

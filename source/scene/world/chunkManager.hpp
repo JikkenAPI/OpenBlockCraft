@@ -26,6 +26,7 @@
 #define _SCENE_WORLD_CHUNKMANAGER_HPP_
 
 #include <vector>
+#include "core/frustrum.hpp"
 #include "scene/world/chunk.hpp"
 
 class ChunkManager
@@ -36,12 +37,13 @@ public:
 
 	void createChunkAtPosition(const glm::vec3 &pos);
 
-	void render(RenderPass pass, const double &dt);
+	void render(const glm::mat4 &viewMatrix, const glm::mat4 &projMatrix, RenderPass pass, const double &dt);
 
 	const std::vector<Chunk*>& getChunks() const;
 
 private:
 	std::vector<Chunk*> mChunks;
+	Frustrum mFrustrum;
 };
 
 #endif

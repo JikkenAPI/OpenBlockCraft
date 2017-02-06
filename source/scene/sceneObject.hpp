@@ -34,6 +34,7 @@ public:
 	virtual ~SceneObject();
 
 	void setPosition(const glm::vec3 &pos) { mPosition = pos; }
+	glm::vec3 getPosition() const { return mPosition;  }
 
 	virtual void update(const double &dt) {}
 

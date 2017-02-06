@@ -57,7 +57,7 @@ public:
 	/// Note: This is labeled as FAST, as the author of the algorithm
 	/// states that it can occasionally cause false positives, rendering more
 	/// than necessary. However it is computationally less expensive.
-	bool checkCubeFAST(const glm::vec3 &center, float length) const;
+	bool checkCubeFAST(const glm::vec3 &center, const glm::vec3 &length) const;
 
 private:
 	/// 6 Normalized planes that represent the frustrum.

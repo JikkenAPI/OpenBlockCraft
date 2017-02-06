@@ -81,7 +81,7 @@ void Frustrum::setVP(const glm::mat4 &view, const glm::mat4 &proj)
 	// Normalize each plane
 	for (int i = 0; i < 6; ++i)
 	{
-		glm::vec4 &plane = mPlanes[i];
+		const glm::vec4 &plane = mPlanes[i];
 		float dist = glm::sqrt(plane.x * plane.x + plane.y * plane.y + plane.z * plane.z);
 #ifdef _DEBUG
 		if (dist == 0.0f)
@@ -89,7 +89,7 @@ void Frustrum::setVP(const glm::mat4 &view, const glm::mat4 &proj)
 			assert(false);
 		}
 #endif
-		plane *= 1.0f / dist;
+		mPlanes[i] /= dist;
 	}
 }
 
@@ -120,15 +120,15 @@ bool Frustrum::checkSphere(const glm::vec3 &point, float radius) const
 	return true;
 }
 
-bool Frustrum::checkCubeFAST(const glm::vec3 &center, float length) const
+bool Frustrum::checkCubeFAST(const glm::vec3 &center, const glm::vec3 &length) const
 {
 	// Calc min/maxes
-	float xMin = center.x - length;
-	float xMax = center.x + length;
-	float yMin = center.y - length;
-	float yMax = center.y + length;
-	float zMin = center.z - length;
-	float zMax = center.z + length;
+	float xMin = center.x - length.x;
+	float xMax = center.x + length.x;
+	float yMin = center.y - length.y;
+	float yMax = center.y + length.y;
+	float zMin = center.z - length.z;
+	float zMax = center.z + length.z;
 
 #define check(_x, _y, _z) frustrum.x * _x + frustrum.y * _y + frustrum.z * _z + frustrum.w > 0 
 
