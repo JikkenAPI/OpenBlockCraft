@@ -29,4 +29,4 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>
 ```
-![GPLv3 Logo by FSF](https://www.gnu.org/graphics/lgplv3-147x51.png)
+![GPLv3 Logo by FSF](https://www.gnu.org/graphics/gplv3-127x51.png)
