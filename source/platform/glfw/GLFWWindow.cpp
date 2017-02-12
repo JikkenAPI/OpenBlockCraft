@@ -18,7 +18,11 @@
 
 #include <cassert>
 #include <GL/glew.h>
+#include <jikken/graphicsDevice.hpp>
+#include <jikken/jikken.hpp>
 #include "platform/glfw/GLFWWindow.hpp"
+
+extern Jikken::GraphicsDevice *gGraphics;
 
 #if defined(_DEBUG) && !defined(__APPLE__)
 static void APIENTRY debugGLCb(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *message, const void *userParam)
@@ -85,11 +89,13 @@ GLFWWindow::GLFWWindow(int width, int height, API graphicsApi)
 			glDebugMessageCallback(debugGLCb, nullptr);
 		}
 #endif
+		gGraphics = Jikken::createGraphicsDevice(Jikken::API::eOpenGL);
 	}
 }
 
 GLFWWindow::~GLFWWindow() 
 {
+	Jikken::destroyGraphicsDevice(gGraphics);
 	glfwDestroyWindow(mWindow);
 }
 

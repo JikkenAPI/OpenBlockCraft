@@ -46,12 +46,11 @@ set (GAME_SOURCE
 set (GAME_LIBS
 	glfw
 	OpenSimplexNoise
-	GLEW
+	Jikken
 )
 
 set (GAME_INCLUDES 
 	source
-	thirdparty/glew/include
 	thirdparty/glfw/include
 	thirdparty/glm
 	thirdparty/openSimplexNoise

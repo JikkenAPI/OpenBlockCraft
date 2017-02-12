@@ -19,7 +19,8 @@
 #include <thread>
 #include <cstdlib>
 #include <string>
-#include <GL/glew.h>
+#include <jikken/graphicsDevice.hpp>
+#include <jikken/jikken.hpp>
 #include <open-simplex-noise.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include "platform/platform.hpp"
@@ -40,6 +41,7 @@ GLuint program; // Shader Program
 
 GLuint modelLoc; // mvp uniform
 
+Jikken::GraphicsDevice *gGraphics = nullptr;
 ChunkManager *chunkManager = nullptr;
 
 glm::mat4 proj; // proj matrix
@@ -91,43 +93,43 @@ void initGL()
 		return;
 	}
 
-	glEnable(GL_DEPTH_TEST);
-	checkGLErrors();
-	glDepthFunc(GL_LESS);
-	checkGLErrors();
-	glEnable(GL_CULL_FACE);
-	glCullFace(GL_BACK);
-	glEnable(GL_BLEND);
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	Jikken::CommandQueue *queue = gGraphics->createCommandQueue();
+	auto depthCmd = queue->alloc<Jikken::DepthStencilStateCommand>();
+	depthCmd->depthEnabled = true;
+	depthCmd->depthWrite = true;
+	depthCmd->depthFunc = Jikken::DepthFunc::eLess;
+
+	auto cullCmd = queue->alloc<Jikken::CullStateCommand>();
+	cullCmd->enabled = true;
+	cullCmd->face = Jikken::CullFaceState::eBack;
+	cullCmd->state = Jikken::WindingOrderState::eCCW;
+
+	auto blendCmd = queue->alloc<Jikken::BlendStateCommand>();
+	blendCmd->enabled = true;
+	blendCmd->source = Jikken::BlendState::eSrcAlpha;
+	blendCmd->dest = Jikken::BlendState::eOneMinusSrcAlpha;
+
+	gGraphics->submitCommandQueue(queue);
+	gGraphics->deleteCommandQueue(queue);
 
 	// create shaders
 	{
 		GLuint v = glCreateShader(GL_VERTEX_SHADER);
 		GLuint f = glCreateShader(GL_FRAGMENT_SHADER);
-		checkGLErrors();
 		std::string vContents;
 		vShader.readFile(vContents);
 		const char *contents = reinterpret_cast<const char*>(vContents.c_str());
 		glShaderSource(v, 1, &contents, 0);
-		checkGLErrors();
 		glCompileShader(v);
-		checkGLErrors();
-		checkShaderErrors(v, GL_COMPILE_STATUS);
 		std::string fContents;
 		fShader.readFile(fContents);
 		const char *fContents2 = reinterpret_cast<const char*>(fContents.c_str());
 		glShaderSource(f, 1, &fContents2, 0);
-		checkGLErrors();
 		glCompileShader(f);
-		checkGLErrors();
-		checkShaderErrors(f, GL_COMPILE_STATUS);
 
 		program = glCreateProgram();
-		checkGLErrors();
 		glAttachShader(program, v);
-		checkGLErrors();
 		glAttachShader(program, f);
-		checkGLErrors();
 		glLinkProgram(program);
 
 		GLint linked;
@@ -218,7 +220,7 @@ void createChunks()
 	std::vector<Chunk*> chunks;
 
 	// spawn chunks.
-	const int grid = 16;
+	const int grid = 8;
 	for (int x = -CHUNK_LENGTH * grid; x < CHUNK_LENGTH * grid; x += CHUNK_LENGTH)
 	{
 		for (int z = -CHUNK_WIDTH * grid; z < CHUNK_WIDTH * grid; z += CHUNK_WIDTH)
