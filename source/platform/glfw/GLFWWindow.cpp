@@ -115,11 +115,6 @@ bool GLFWWindow::shouldClose() const
 	return !!glfwWindowShouldClose(mWindow);
 }
 
-void GLFWWindow::swapBuffers()
-{
-	glfwSwapBuffers(mWindow);
-}
-
 void GLFWWindow::toggleCursor()
 {
 	mCursorShowing = !mCursorShowing;

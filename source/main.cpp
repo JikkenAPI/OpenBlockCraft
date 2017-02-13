@@ -158,7 +158,7 @@ int main(int argc, const char **argv)
 
 		render(camera, timer->getDelta());
 
-		window->swapBuffers();
+		gGraphics->present();
 		timer->stop();
 	}
 

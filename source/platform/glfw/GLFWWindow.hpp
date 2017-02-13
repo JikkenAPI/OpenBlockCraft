@@ -43,8 +43,6 @@ public:
 
 	virtual bool shouldClose() const override;
 
-	virtual void swapBuffers() override;
-
 	virtual void toggleCursor() override;
 
 	virtual void toggleVerticalSync() override;

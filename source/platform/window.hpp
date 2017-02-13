@@ -51,8 +51,6 @@ public:
 
 	virtual bool shouldClose() const = 0;
 
-	virtual void swapBuffers() = 0;
-
 	virtual void toggleCursor() = 0;
 
 	virtual void toggleVerticalSync() = 0;
