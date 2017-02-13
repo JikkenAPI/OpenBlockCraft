@@ -56,6 +56,9 @@ set (GAME_INCLUDES
 	thirdparty/openSimplexNoise
 )
 
+#set game root directory so other cmake modules can find any includes/libs if needed
+set(GAME_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+
 if (WIN32)
 	set (GAME_LIBS
 		${GAME_LIBS}

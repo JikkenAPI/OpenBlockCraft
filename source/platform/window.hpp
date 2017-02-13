@@ -31,7 +31,8 @@ public:
 	enum class API
 	{
 		eNONE,
-		eOPENGL
+		eOPENGL,
+		eVULKAN
 	};
 
 public:

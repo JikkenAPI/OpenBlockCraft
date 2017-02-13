@@ -78,10 +78,10 @@ ChunkManager::ChunkManager()
 	);
 
 	// Bind UBOs to shader
-	gGraphics->bindConstantBuffer(mShader, mCameraCBuffer, "Camera", 0);
+/*	gGraphics->bindConstantBuffer(mShader, mCameraCBuffer, "Camera", 0);
 	gGraphics->bindConstantBuffer(mShader, mNormalCBuffer, "Normals", 1);
 	gGraphics->bindConstantBuffer(mShader, mModelMatrixCBuffer, "ChunkModelMatrix", 2);
-	gGraphics->bindConstantBuffer(mShader, mSunCBuffer, "Sun", 3);
+	gGraphics->bindConstantBuffer(mShader, mSunCBuffer, "Sun", 3);*/
 
 	mCommandQueue = gGraphics->createCommandQueue();
 }
