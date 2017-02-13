@@ -21,6 +21,7 @@
 
 #include <vector>
 #include <GL/glew.h>
+#include <jikken/jikken.hpp>
 #include "scene/sceneObject.hpp"
 #include "scene/world/block.hpp"
 #include "core/geometry/cube.hpp"
@@ -39,7 +40,7 @@ public:
 	void genVisibleGeometry();
 	void updateTerrainGL();
 
-	void render(RenderPass pass, const double &dt);
+	void render(Jikken::CommandQueue *cmdQueue, RenderPass pass, const double &dt);
 
 protected:
 	// This will allocate a page of memory that is 16x256x16 Block
@@ -53,17 +54,19 @@ protected:
 
 	struct GL
 	{
-		GLuint mVAO;
-		GLuint mVBO;
-		GLuint mIBO;
+		Jikken::VertexArrayHandle mVAO;
+		Jikken::BufferHandle mVBO;
+		Jikken::BufferHandle mIBO;
 
 		std::vector<CubeVert> mVisibleMesh;
 		std::vector<uint16_t> mIndexData;
 
 		uint16_t mCurrentIndex;
 	};
-
 	GL mGL[2];
+
+	Jikken::LayoutHandle mLayout;
+	Jikken::CommandQueue *mUpdateTerrainComamandQueue;
 };
 
 #endif

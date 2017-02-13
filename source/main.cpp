@@ -33,66 +33,11 @@
 #include "scene/world/chunkManager.hpp"
 #include "core/noise.hpp"
 
-GLuint ubo; // UBO for projection and view matrices (Camera)
-GLuint normalUBO; // Ubo for normals.
-GLuint sunUBO; // ubo for sun
-
-GLuint program; // Shader Program
-
-GLuint modelLoc; // mvp uniform
-
 Jikken::GraphicsDevice *gGraphics = nullptr;
 ChunkManager *chunkManager = nullptr;
 
-glm::mat4 proj; // proj matrix
-
-const int UBO_CAMERA_LOCATION = 0;
-const int UBO_NORMALS_LOCATION = 1;
-const int UBO_SUN_LOCATION = 2;
-
-struct
-{
-	glm::vec4 direction;
-	glm::vec4 ambient;
-	glm::vec4 diffuse;
-} SunUBOData;
-
-bool checkShaderErrors(GLuint shader, GLenum status)
-{
-	GLint success;
-	glGetShaderiv(shader, status, &success);
-	if (!success)
-	{
-		const int LENGTH = 1024;
-		GLchar info[LENGTH];
-		glGetShaderInfoLog(shader, LENGTH, 0, info);
-		printf("Shader Error:\n%s\n", info);
-		return false;
-	}
-	return true;
-}
-
-void checkGLErrors()
-{
-	GLenum err;
-	while ((err = glGetError()) != GL_NO_ERROR)
-	{
-		printf("GL error: %i\n", err);
-	}
-}
-
 void initGL()
 {
-	File vShader("Assets/chunkV.glsl", File::AccessFlags::eREAD);
-	File fShader("Assets/chunkF.glsl", File::AccessFlags::eREAD);
-
-	if (!vShader.isFile() || !fShader.isFile())
-	{
-		std::printf("Unable to find shaders!");
-		assert(false);
-		return;
-	}
-
 	Jikken::CommandQueue *queue = gGraphics->createCommandQueue();
 	auto depthCmd = queue->alloc<Jikken::DepthStencilStateCommand>();
 	depthCmd->depthEnabled = true;
@@ -111,108 +56,16 @@ void initGL()
 
 	gGraphics->submitCommandQueue(queue);
 	gGraphics->deleteCommandQueue(queue);
-
-	// create shaders
-	{
-		GLuint v = glCreateShader(GL_VERTEX_SHADER);
-		GLuint f = glCreateShader(GL_FRAGMENT_SHADER);
-		std::string vContents;
-		vShader.readFile(vContents);
-		const char *contents = reinterpret_cast<const char*>(vContents.c_str());
-		glShaderSource(v, 1, &contents, 0);
-		glCompileShader(v);
-		std::string fContents;
-		fShader.readFile(fContents);
-		const char *fContents2 = reinterpret_cast<const char*>(fContents.c_str());
-		glShaderSource(f, 1, &fContents2, 0);
-		glCompileShader(f);
-
-		program = glCreateProgram();
-		glAttachShader(program, v);
-		glAttachShader(program, f);
-		glLinkProgram(program);
-
-		GLint linked;
-		glGetProgramiv(program, GL_LINK_STATUS, &linked);
-		if (!linked)
-		{
-			GLint len;
-			glGetProgramiv(program, GL_INFO_LOG_LENGTH, &len);
-			char *msg = new char[len + 1];
-			memset(msg, 0, sizeof(char) * (len + 1));
-			glGetProgramInfoLog(program, len, &len, msg);
-			printf("GL Link Issue: %s\n", msg);
-			delete[] msg;
-		}
-
-		checkGLErrors();
-	}
-
-	modelLoc = glGetUniformLocation(program, "model");
-	checkGLErrors();
-
-	// ubo
-	glGenBuffers(1, &ubo);
-	glBindBuffer(GL_UNIFORM_BUFFER, ubo);
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::mat4) * 2, NULL, GL_DYNAMIC_DRAW);
-	checkGLErrors();
-
-	// bind ubo
-	glUniformBlockBinding(program, glGetUniformBlockIndex(program, "Camera"), UBO_CAMERA_LOCATION);
-	glBindBufferBase(GL_UNIFORM_BUFFER, UBO_CAMERA_LOCATION, ubo);
-	checkGLErrors();
-
-	// normal ubo
-	glGenBuffers(1, &normalUBO);
-	glBindBuffer(GL_UNIFORM_BUFFER, normalUBO);
-	glBufferData(GL_UNIFORM_BUFFER, sizeof(glm::vec4) * 6, &sCubeFaceNormals[0][0], GL_STATIC_DRAW);
-	checkGLErrors();
-
-	// bind ubo
-	glUniformBlockBinding(program, glGetUniformBlockIndex(program, "Normals"), UBO_NORMALS_LOCATION);
-	glBindBufferBase(GL_UNIFORM_BUFFER, UBO_NORMALS_LOCATION, normalUBO);
-	checkGLErrors();
-
-	{
-		SunUBOData.direction = glm::vec4(0.0f, -1.0f, 0.0f, 0.0f);
-		SunUBOData.ambient = glm::vec4(0.1f, 0.1f, 0.1f, 0.0f);
-		SunUBOData.diffuse = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
-
-		glGenBuffers(1, &sunUBO);
-		glBindBuffer(GL_UNIFORM_BUFFER, sunUBO);
-		glBufferData(GL_UNIFORM_BUFFER, sizeof(SunUBOData), &SunUBOData, GL_STATIC_DRAW);
-		checkGLErrors();
-
-		glUniformBlockBinding(program, glGetUniformBlockIndex(program, "Sun"), UBO_SUN_LOCATION);
-		glBindBufferBase(GL_UNIFORM_BUFFER, UBO_SUN_LOCATION, sunUBO);
-	}
-
-	// bind proj matrix since it doesn't change yet :)
-	proj = glm::perspective(90.0f, 1440.0f / 900.0f, 0.1f, 500.0f);
-	glBindBuffer(GL_UNIFORM_BUFFER, ubo);
-	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(glm::mat4), &proj[0][0]);
-	checkGLErrors();
-
-	// set up for rendering.
-	glUseProgram(program);
-
-	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 }
 
 void render(Camera *camera, double dt)
 {
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	checkGLErrors();
-
-	// bind view matrix
-	glm::mat4 view = camera->getViewMatrix();
-	glBindBuffer(GL_UNIFORM_BUFFER, ubo);
-	glBufferSubData(GL_UNIFORM_BUFFER, sizeof(glm::mat4), sizeof(glm::mat4), &view[0][0]);
-	checkGLErrors();
+	const glm::mat4 &view = camera->getViewMatrix();
+	glm::mat4 proj = proj = glm::perspective(90.0f, 1440.0f / 900.0f, 0.1f, 500.0f);
 
 	// Geometry pass first, then translucent.
 	chunkManager->render(view, proj, RenderPass::eGEOMETRY, dt);
-	chunkManager->render(view, proj, RenderPass::eTRANSLUCENT, dt);
+	//chunkManager->render(view, proj, RenderPass::eTRANSLUCENT, dt);
 }
 
 void createChunks()
@@ -220,7 +73,7 @@ void createChunks()
 	std::vector<Chunk*> chunks;
 
 	// spawn chunks.
-	const int grid = 8;
+	const int grid = 4;
 	for (int x = -CHUNK_LENGTH * grid; x < CHUNK_LENGTH * grid; x += CHUNK_LENGTH)
 	{
 		for (int z = -CHUNK_WIDTH * grid; z < CHUNK_WIDTH * grid; z += CHUNK_WIDTH)
@@ -281,11 +134,6 @@ int main(int argc, const char **argv)
 	Noise::get()->setSeed(696969);
 	chunkManager = new ChunkManager();
 
-	// global VAO, at least one needs to be bound
-	GLuint vao;
-	glGenVertexArrays(1, &vao);
-	glBindVertexArray(vao);
-
 	// create camera
 	Camera *camera = new Camera();
 	camera->setPosition(glm::vec3(0.0f, 100.0f, 3.0f));
@@ -315,7 +163,6 @@ int main(int argc, const char **argv)
 	}
 
 	delete chunkManager;
-	glDeleteVertexArrays(1, &vao);
 	Platform::getWindowManager()->destroyWindow(window);
 	Platform::destroyTimer(timer);
 	Platform::cleanupSubSystems();

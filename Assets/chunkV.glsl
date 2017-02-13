@@ -16,7 +16,10 @@ layout(std140) uniform Normals
    vec4 normals[6];
 };
 
-uniform mat4 model;
+layout(std140) uniform ChunkModelMatrix
+{
+	mat4 model;
+};
 
 void main()
 {

@@ -25,6 +25,7 @@
 
 // temp
 extern ChunkManager *chunkManager;
+extern Jikken::GraphicsDevice *gGraphics;
 
 const int WATER_HEIGHT = 60;
 
@@ -51,28 +52,38 @@ Chunk::Chunk()
 	// Initialize all memory to the air type block.
 	memset(mBlocks, static_cast<uint8_t>(BlockType::eAIR), memChunk);
 
+	std::vector<Jikken::VertexInputLayout> layouts;
+	Jikken::VertexInputLayout position;
+	position.attribute = Jikken::VertexAttributeName::ePOSITION;
+	position.componentSize = 4;
+	position.offset = 0;
+	position.stride = 0;
+	position.type = Jikken::VertexAttributeType::eFLOAT;
+	layouts.push_back(position);
+	mLayout = gGraphics->createVertexInputLayout(layouts);
+
+	mUpdateTerrainComamandQueue = gGraphics->createCommandQueue();
+
 	// we have 2 passes. rip me.
 	for (int i = 0; i < 2; i++)
 	{
 		mGL[i].mCurrentIndex = 0;
 
-		glGenBuffers(1, &mGL[i].mVBO);
-		glGenBuffers(1, &mGL[i].mIBO);
+		mGL[i].mVBO = gGraphics->createBuffer(
+			Jikken::BufferType::eVertexBuffer,
+			Jikken::BufferUsageHint::eStaticDraw,
+			0,
+			nullptr
+		);
 
-		glGenVertexArrays(1, &mGL[i].mVAO);
-		glBindVertexArray(mGL[i].mVAO);
+		mGL[i].mIBO = gGraphics->createBuffer(
+			Jikken::BufferType::eIndexBuffer,
+			Jikken::BufferUsageHint::eStaticDraw,
+			0,
+			nullptr
+		);
 
-		// The following state is captured by the bound vertex array.
-		// When we rebind the vertex array, this will all be implicitly
-		// bound by the driver.
-		{
-			glBindBuffer(GL_ARRAY_BUFFER, mGL[i].mVBO);
-			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mGL[i].mIBO);
-
-			glEnableVertexAttribArray(0);
-			glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, 0);
-		}
-		glBindVertexArray(0);
+		mGL[i].mVAO = gGraphics->createVAO(mLayout, mGL[i].mVBO, mGL[i].mIBO);
 	}
 }
 
@@ -87,10 +98,12 @@ Chunk::~Chunk()
 	// free GL objects.
 	for (int i = 0; i < 2; i++)
 	{
-		glDeleteBuffers(1, &mGL[i].mVBO);
-		glDeleteBuffers(1, &mGL[i].mIBO);
-		glDeleteVertexArrays(1, &mGL[i].mVAO);
+		gGraphics->deleteBuffer(mGL[i].mVBO);
+		gGraphics->deleteBuffer(mGL[i].mIBO);
+		gGraphics->deleteVAO(mGL[i].mVAO);
 	}
+
+	gGraphics->deleteCommandQueue(mUpdateTerrainComamandQueue);
 }
 
 void Chunk::genTerrain()
@@ -308,18 +321,24 @@ void Chunk::updateTerrainGL()
 {
 	for (int i = 0; i < 2; i++)
 	{
-		glBindBuffer(GL_ARRAY_BUFFER, mGL[i].mVBO);
-		glBufferData(GL_ARRAY_BUFFER, sizeof(CubeVert) * mGL[i].mVisibleMesh.size(), mGL[i].mVisibleMesh.data(), GL_STATIC_DRAW);
+		auto *reallocVBO = mUpdateTerrainComamandQueue->alloc<Jikken::ReallocBufferCommand>();
+		reallocVBO->buffer = mGL[i].mVBO;
+		reallocVBO->stride = sizeof(CubeVert);
+		reallocVBO->count = mGL[i].mVisibleMesh.size();
+		reallocVBO->data = mGL[i].mVisibleMesh.data();
+		reallocVBO->hint = Jikken::BufferUsageHint::eStaticDraw;
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, mGL[i].mIBO);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(uint16_t) * mGL[i].mIndexData.size(), mGL[i].mIndexData.data(), GL_STATIC_DRAW);
+		auto *reallocIBO = mUpdateTerrainComamandQueue->alloc<Jikken::ReallocBufferCommand>();
+		reallocIBO->buffer = mGL[i].mIBO;
+		reallocIBO->stride = sizeof(uint16_t);
+		reallocIBO->count = mGL[i].mIndexData.size();
+		reallocIBO->data = mGL[i].mIndexData.data();
+		reallocIBO->hint = Jikken::BufferUsageHint::eStaticDraw;
 	}
+	gGraphics->submitCommandQueue(mUpdateTerrainComamandQueue);
 }
 
-extern GLuint modelLoc; // mvp uniform
-extern void checkGLErrors();
-
-void Chunk::render(RenderPass pass, const double &dt)
+void Chunk::render(Jikken::CommandQueue *cmdQueue, RenderPass pass, const double &dt)
 {
 	int renderPass = (pass == RenderPass::eGEOMETRY) ? 0 : 1;
 	if (mGL[renderPass].mIndexData.size() == 0)
@@ -328,11 +347,13 @@ void Chunk::render(RenderPass pass, const double &dt)
 		return;
 	}
 
-	glBindVertexArray(mGL[renderPass].mVAO);
+	// Bind VAO
+	auto *bindVAO = cmdQueue->alloc<Jikken::BindVAOCommand>();
+	bindVAO->vertexArray = mGL[renderPass].mVAO;
 
-	glm::mat4 model(1.0f);
-	model = glm::translate(model, mPosition);
-	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, &model[0][0]);
-
-	glDrawElements(GL_TRIANGLES, mGL[renderPass].mIndexData.size(), GL_UNSIGNED_SHORT, nullptr);
+	// Issue Drawcall
+	auto *draw = cmdQueue->alloc<Jikken::DrawCommand>();
+	draw->primitive = Jikken::PrimitiveType::eTriangles;
+	draw->start = 0;
+	draw->count = mGL[renderPass].mIndexData.size();
 }

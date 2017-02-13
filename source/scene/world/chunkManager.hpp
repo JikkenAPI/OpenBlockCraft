@@ -20,6 +20,7 @@
 #define _SCENE_WORLD_CHUNKMANAGER_HPP_
 
 #include <vector>
+#include <jikken/jikken.hpp>
 #include "core/frustrum.hpp"
 #include "scene/world/chunk.hpp"
 
@@ -42,6 +43,13 @@ public:
 private:
 	std::vector<Chunk*> mChunks;
 	Frustrum mFrustrum;
+
+	Jikken::CommandQueue *mCommandQueue;
+	Jikken::ShaderHandle mShader;
+	Jikken::BufferHandle mCameraCBuffer;
+	Jikken::BufferHandle mNormalCBuffer;
+	Jikken::BufferHandle mModelMatrixCBuffer;
+	Jikken::BufferHandle mSunCBuffer;
 };
 
 #endif
