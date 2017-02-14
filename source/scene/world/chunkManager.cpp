@@ -130,7 +130,7 @@ void ChunkManager::render(const glm::mat4 &viewMatrix, const glm::mat4 &projMatr
 	viewprojCBuffer->buffer = mCameraCBuffer;
 	viewprojCBuffer->offset = 0;
 	viewprojCBuffer->dataSize = sizeof(glm::mat4) * 2;
-	viewprojCBuffer->data = vp;
+	viewprojCBuffer->data = mCommandQueue->memcpy(sizeof(glm::mat4) * 2, vp);
 
 	// Update frustrum
 	mFrustrum.setVP(viewMatrix, projMatrix);
