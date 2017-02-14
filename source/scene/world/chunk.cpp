@@ -325,14 +325,14 @@ void Chunk::updateTerrainGL()
 		reallocVBO->buffer = mGL[i].mVBO;
 		reallocVBO->stride = sizeof(CubeVert);
 		reallocVBO->count = mGL[i].mVisibleMesh.size();
-		reallocVBO->data = mGL[i].mVisibleMesh.data();
+		reallocVBO->data = mUpdateTerrainComamandQueue->memcpy(sizeof(CubeVert) * mGL[i].mVisibleMesh.size(), mGL[i].mVisibleMesh.data());
 		reallocVBO->hint = Jikken::BufferUsageHint::eStaticDraw;
 
 		auto *reallocIBO = mUpdateTerrainComamandQueue->alloc<Jikken::ReallocBufferCommand>();
 		reallocIBO->buffer = mGL[i].mIBO;
 		reallocIBO->stride = sizeof(uint16_t);
 		reallocIBO->count = mGL[i].mIndexData.size();
-		reallocIBO->data = mGL[i].mIndexData.data();
+		reallocIBO->data = mUpdateTerrainComamandQueue->memcpy(sizeof(uint16_t) * mGL[i].mIndexData.size(), mGL[i].mIndexData.data());
 		reallocIBO->hint = Jikken::BufferUsageHint::eStaticDraw;*/
 	}
 	gGraphics->submitCommandQueue(mUpdateTerrainComamandQueue);
