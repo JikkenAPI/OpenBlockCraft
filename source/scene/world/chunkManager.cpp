@@ -147,7 +147,7 @@ void ChunkManager::render(const glm::mat4 &viewMatrix, const glm::mat4 &projMatr
 		glm::vec3 midPoint = chunk->getPosition() + size;
 
 		// Perform frustrum culling first. If it is inside the frustrum, go ahead and render it.
-		//if (mFrustrum.checkCubeFAST(midPoint, size))
+		if (mFrustrum.checkCubeFAST(midPoint, size))
 		{
 			glm::mat4 model(1.0f);
 			model = glm::translate(model, chunk->getPosition());
@@ -157,7 +157,7 @@ void ChunkManager::render(const glm::mat4 &viewMatrix, const glm::mat4 &projMatr
 			modelCBuffer->buffer = mModelMatrixCBuffer;
 			modelCBuffer->offset = 0;
 			modelCBuffer->dataSize = sizeof(glm::mat4);
-			modelCBuffer->fData = &model[0][0];
+			modelCBuffer->data = mCommandQueue->memcpy(sizeof(glm::mat4), &model[0][0]);
 
 			chunk->render(mCommandQueue, pass, dt);
 		}

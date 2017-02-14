@@ -73,7 +73,7 @@ void createChunks()
 	std::vector<Chunk*> chunks;
 
 	// spawn chunks.
-	const int grid = 4;
+	const int grid = 8;
 	for (int x = -CHUNK_LENGTH * grid; x < CHUNK_LENGTH * grid; x += CHUNK_LENGTH)
 	{
 		for (int z = -CHUNK_WIDTH * grid; z < CHUNK_WIDTH * grid; z += CHUNK_WIDTH)
