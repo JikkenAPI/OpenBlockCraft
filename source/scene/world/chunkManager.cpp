@@ -47,8 +47,8 @@ ChunkManager::ChunkManager()
 
 	// Create shader.
 	std::vector<Jikken::ShaderDetails> details;
-	details.push_back({ "Assets/chunkV.glsl", Jikken::ShaderStage::eVertex });
-	details.push_back({ "Assets/chunkF.glsl", Jikken::ShaderStage::eFragment });
+	details.push_back({ "../Assets/chunkV.glsl", Jikken::ShaderStage::eVertex });
+	details.push_back({ "../Assets/chunkF.glsl", Jikken::ShaderStage::eFragment });
 	mShader = gGraphics->createShader(details);
 
 	// Create constant buffers
@@ -78,10 +78,10 @@ ChunkManager::ChunkManager()
 	);
 
 	// Bind UBOs to shader
-/*	gGraphics->bindConstantBuffer(mShader, mCameraCBuffer, "Camera", 0);
+	gGraphics->bindConstantBuffer(mShader, mCameraCBuffer, "Camera", 0);
 	gGraphics->bindConstantBuffer(mShader, mNormalCBuffer, "Normals", 1);
 	gGraphics->bindConstantBuffer(mShader, mModelMatrixCBuffer, "ChunkModelMatrix", 2);
-	gGraphics->bindConstantBuffer(mShader, mSunCBuffer, "Sun", 3);*/
+	gGraphics->bindConstantBuffer(mShader, mSunCBuffer, "Sun", 3);
 
 	mCommandQueue = gGraphics->createCommandQueue();
 }

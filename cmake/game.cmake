@@ -76,6 +76,11 @@ target_link_libraries(CPPCraft ${GAME_LIBS})
 target_include_directories(CPPCraft PUBLIC ${GAME_INCLUDES})
 target_compile_definitions(CPPCraft PUBLIC GLEW_STATIC)
 
+#output directory
+set_target_properties(CPPCraft PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/bin")
+set_target_properties(CPPCraft PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/bin")
+set_target_properties(CPPCraft PROPERTIES DEBUG_POSTFIX "_debug")
+
 source_group("core" REGULAR_EXPRESSION core/*)
 source_group("core\\geometry" REGULAR_EXPRESSION core/geometry/*)
 source_group("main" main.cpp)
