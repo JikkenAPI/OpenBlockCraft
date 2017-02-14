@@ -89,6 +89,8 @@ GLFWWindow::GLFWWindow(int width, int height, API graphicsApi)
 			glDebugMessageCallback(debugGLCb, nullptr);
 		}
 #endif
+
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 		gGraphics = Jikken::createGraphicsDevice(Jikken::API::eOpenGL);
 	}
 }

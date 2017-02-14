@@ -34,11 +34,12 @@
 #include "core/noise.hpp"
 
 Jikken::GraphicsDevice *gGraphics = nullptr;
+Jikken::CommandQueue *queue = nullptr;
 ChunkManager *chunkManager = nullptr;
 
 void initGL()
 {
-	Jikken::CommandQueue *queue = gGraphics->createCommandQueue();
+	queue = gGraphics->createCommandQueue();
 	auto depthCmd = queue->alloc<Jikken::DepthStencilStateCommand>();
 	depthCmd->depthEnabled = true;
 	depthCmd->depthWrite = true;
@@ -55,17 +56,21 @@ void initGL()
 	blendCmd->dest = Jikken::BlendState::eOneMinusSrcAlpha;
 
 	gGraphics->submitCommandQueue(queue);
-	gGraphics->deleteCommandQueue(queue);
 }
 
 void render(Camera *camera, double dt)
 {
+	// clear command
+	auto clearCmd = queue->alloc<Jikken::ClearBufferCommand>();
+	clearCmd->flag = Jikken::ClearBufferFlags::eColor | Jikken::ClearBufferFlags::eDepth;
+	gGraphics->submitCommandQueue(queue);
+
 	const glm::mat4 &view = camera->getViewMatrix();
 	glm::mat4 proj = proj = glm::perspective(90.0f, 1440.0f / 900.0f, 0.1f, 500.0f);
 
 	// Geometry pass first, then translucent.
 	chunkManager->render(view, proj, RenderPass::eGEOMETRY, dt);
-	//chunkManager->render(view, proj, RenderPass::eTRANSLUCENT, dt);
+	chunkManager->render(view, proj, RenderPass::eTRANSLUCENT, dt);
 }
 
 void createChunks()
@@ -162,6 +167,7 @@ int main(int argc, const char **argv)
 		timer->stop();
 	}
 
+	gGraphics->deleteCommandQueue(queue);
 	delete chunkManager;
 	Platform::getWindowManager()->destroyWindow(window);
 	Platform::destroyTimer(timer);

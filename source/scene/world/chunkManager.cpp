@@ -118,12 +118,6 @@ void ChunkManager::render(const glm::mat4 &viewMatrix, const glm::mat4 &projMatr
 	if (mChunks.size() == 0)
 		return;
 
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
-	// clear command
-	auto clearCmd = mCommandQueue->alloc<Jikken::ClearBufferCommand>();
-	clearCmd->flag = Jikken::ClearBufferFlags::eColor | Jikken::ClearBufferFlags::eDepth;
-
 	// use shader
 	auto shaderCmd = mCommandQueue->alloc<Jikken::SetShaderCommand>();
 	shaderCmd->handle = mShader;
