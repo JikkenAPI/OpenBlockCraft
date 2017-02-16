@@ -42,33 +42,41 @@
 Jikken::GraphicsDevice *gGraphics = nullptr;
 Jikken::CommandQueue *queue = nullptr;
 ChunkManager *chunkManager = nullptr;
+Jikken::ClearBufferCommand clearCmd;
 
 void init()
 {
 	queue = gGraphics->createCommandQueue();
-	auto depthCmd = queue->alloc<Jikken::DepthStencilStateCommand>();
-	depthCmd->depthEnabled = true;
-	depthCmd->depthWrite = true;
-	depthCmd->depthFunc = Jikken::DepthFunc::eLess;
+	Jikken::DepthStencilStateCommand depthCmd;
+	depthCmd.depthEnabled = true;
+	depthCmd.depthWrite = true;
+	depthCmd.depthFunc = Jikken::DepthFunc::eLess;
 
-	auto cullCmd = queue->alloc<Jikken::CullStateCommand>();
-	cullCmd->enabled = true;
-	cullCmd->face = Jikken::CullFaceState::eBack;
-	cullCmd->state = Jikken::WindingOrderState::eCCW;
+	Jikken::CullStateCommand cullCmd;
+	cullCmd.enabled = true;
+	cullCmd.face = Jikken::CullFaceState::eBack;
+	cullCmd.state = Jikken::WindingOrderState::eCCW;
 
-	auto blendCmd = queue->alloc<Jikken::BlendStateCommand>();
-	blendCmd->enabled = true;
-	blendCmd->source = Jikken::BlendState::eSrcAlpha;
-	blendCmd->dest = Jikken::BlendState::eOneMinusSrcAlpha;
+	Jikken::BlendStateCommand blendCmd;
+	blendCmd.enabled = true;
+	blendCmd.source = Jikken::BlendState::eSrcAlpha;
+	blendCmd.dest = Jikken::BlendState::eOneMinusSrcAlpha;
 
+	//record commands
+	queue->addDepthStencilStateCommand(&depthCmd);
+	queue->addCullStateCommand(&cullCmd);
+	queue->addBlendStateCommand(&blendCmd);
+
+	//submit queue
 	gGraphics->submitCommandQueue(queue);
+
+	clearCmd.flag = Jikken::ClearBufferFlags::eColor | Jikken::ClearBufferFlags::eDepth;
 }
 
 void render(Camera *camera, double dt)
 {
 	// clear command
-	auto clearCmd = queue->alloc<Jikken::ClearBufferCommand>();
-	clearCmd->flag = Jikken::ClearBufferFlags::eColor | Jikken::ClearBufferFlags::eDepth;
+	queue->addClearCommand(&clearCmd);
 	gGraphics->submitCommandQueue(queue);
 
 	const glm::mat4 &view = camera->getViewMatrix();
@@ -159,7 +167,7 @@ int main(int argc, const char **argv)
 	setWorkingDir(argv[0]);
 	Platform::initSubSystems();
 
-	Window* window = Platform::getWindowManager()->createWindow(1440, 900);
+	Window* window = Platform::getWindowManager()->createWindow(1440, 900,Window::API::eOPENGL);
 	Timer *timer = Platform::createTimer();
 	InputManager::get()->setTimer(timer);
 	InputManager::get()->subscribe(window, InputEventType::eKEYPRESSEVENT);

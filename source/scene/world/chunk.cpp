@@ -67,24 +67,39 @@ Chunk::Chunk()
 	// we have 2 passes. rip me.
 	for (int i = 0; i < 2; i++)
 	{
-		mGL[i].mCurrentIndex = 0;
+		mRenderData[i].mCurrentIndex = 0;
 
-		mGL[i].mVBO = gGraphics->createBuffer(
+		mRenderData[i].mVBO = gGraphics->createBuffer(
 			Jikken::BufferType::eVertexBuffer,
 			Jikken::BufferUsageHint::eStaticDraw,
 			0,
 			nullptr
 		);
 
-		mGL[i].mIBO = gGraphics->createBuffer(
+		mRenderData[i].mIBO = gGraphics->createBuffer(
 			Jikken::BufferType::eIndexBuffer,
 			Jikken::BufferUsageHint::eStaticDraw,
 			0,
 			nullptr
 		);
 
-		mGL[i].mVAO = gGraphics->createVAO(mLayout, mGL[i].mVBO, mGL[i].mIBO);
+		mRenderData[i].mVAO = gGraphics->createVAO(mLayout, mRenderData[i].mVBO, mRenderData[i].mIBO);
+
+		mRenderData[i].mVboReallocCmd.count = 0;
+		mRenderData[i].mVboReallocCmd.data = nullptr;
+		mRenderData[i].mVboReallocCmd.buffer = mRenderData[i].mVBO;
+		mRenderData[i].mVboReallocCmd.stride = sizeof(CubeVert);
+		mRenderData[i].mVboReallocCmd.hint = Jikken::BufferUsageHint::eStaticDraw;
+
+		mRenderData[i].mIboReallocCmd.count = 0;
+		mRenderData[i].mIboReallocCmd.data = nullptr;
+		mRenderData[i].mIboReallocCmd.buffer = mRenderData[i].mIBO;
+		mRenderData[i].mIboReallocCmd.stride = sizeof(uint16_t);
+		mRenderData[i].mIboReallocCmd.hint = Jikken::BufferUsageHint::eStaticDraw;
 	}
+
+	mDrawCmd.primitive = Jikken::PrimitiveType::eTriangles;
+	mDrawCmd.start = 0;
 }
 
 Chunk::~Chunk()
@@ -98,9 +113,9 @@ Chunk::~Chunk()
 	// free GL objects.
 	for (int i = 0; i < 2; i++)
 	{
-		gGraphics->deleteBuffer(mGL[i].mVBO);
-		gGraphics->deleteBuffer(mGL[i].mIBO);
-		gGraphics->deleteVAO(mGL[i].mVAO);
+		gGraphics->deleteBuffer(mRenderData[i].mVBO);
+		gGraphics->deleteBuffer(mRenderData[i].mIBO);
+		gGraphics->deleteVAO(mRenderData[i].mVAO);
 	}
 
 	gGraphics->deleteCommandQueue(mUpdateTerrainComamandQueue);
@@ -157,11 +172,11 @@ void Chunk::genTerrain()
 void Chunk::genVisibleGeometry()
 {
 	// Update visible mesh.
-	mGL[0].mVisibleMesh.clear();
-	mGL[0].mIndexData.clear();
-	mGL[0].mVisibleMesh.reserve(16384);
-	mGL[0].mIndexData.reserve(16384);
-	mGL[0].mCurrentIndex = 0;
+	mRenderData[0].mVisibleMesh.clear();
+	mRenderData[0].mIndexData.clear();
+	mRenderData[0].mVisibleMesh.reserve(16384);
+	mRenderData[0].mIndexData.reserve(16384);
+	mRenderData[0].mCurrentIndex = 0;
 
 	const std::vector<Chunk*> &chunks = chunkManager->getChunks();
 
@@ -267,11 +282,11 @@ void Chunk::genVisibleGeometry()
 
 	// Now, we fill the water buffer with data.
 	// for now we just do the top layer of the water, not the sides.
-	mGL[1].mVisibleMesh.clear();
-	mGL[1].mIndexData.clear();
-	mGL[1].mVisibleMesh.reserve(16384);
-	mGL[1].mIndexData.reserve(16384);
-	mGL[1].mCurrentIndex = 0;
+	mRenderData[1].mVisibleMesh.clear();
+	mRenderData[1].mIndexData.clear();
+	mRenderData[1].mVisibleMesh.reserve(16384);
+	mRenderData[1].mIndexData.reserve(16384);
+	mRenderData[1].mCurrentIndex = 0;
 
 	for (int z = 0; z < CHUNK_WIDTH; ++z)
 	{
@@ -308,32 +323,26 @@ void Chunk::_addFace(int pass, Block &block, const glm::vec3 &pos, const CubeSid
 		vert.pos = pos + sCubeFaceVertices[cubeSide][i].pos;
 		vert.normal = sCubeFaceVertices[cubeSide][i].normal;
 		vert.textureID = block.id;
-		mGL[pass].mVisibleMesh.push_back(vert);
+		mRenderData[pass].mVisibleMesh.push_back(vert);
 	}
 
 	// 6 indices per face
 	for (int i = 0; i < 6; ++i)
-		mGL[pass].mIndexData.push_back(sCubeFaceIndices[i] + mGL[pass].mCurrentIndex);
-	mGL[pass].mCurrentIndex += 4;
+		mRenderData[pass].mIndexData.push_back(sCubeFaceIndices[i] + mRenderData[pass].mCurrentIndex);
+	mRenderData[pass].mCurrentIndex += 4;
 }
 
 void Chunk::updateTerrainGL()
 {
 	for (int i = 0; i < 2; i++)
 	{
-		auto *reallocVBO = mUpdateTerrainComamandQueue->alloc<Jikken::ReallocBufferCommand>();
-		reallocVBO->buffer = mGL[i].mVBO;
-		reallocVBO->stride = sizeof(CubeVert);
-		reallocVBO->count = mGL[i].mVisibleMesh.size();
-		reallocVBO->data = mUpdateTerrainComamandQueue->memcpy(sizeof(CubeVert) * mGL[i].mVisibleMesh.size(), mGL[i].mVisibleMesh.data());
-		reallocVBO->hint = Jikken::BufferUsageHint::eStaticDraw;
+		mRenderData[i].mVboReallocCmd.count = mRenderData[i].mVisibleMesh.size();
+		mRenderData[i].mVboReallocCmd.data = mRenderData[i].mVisibleMesh.data();
+		mUpdateTerrainComamandQueue->addReallocBufferCommand(&mRenderData[i].mVboReallocCmd);
 
-		auto *reallocIBO = mUpdateTerrainComamandQueue->alloc<Jikken::ReallocBufferCommand>();
-		reallocIBO->buffer = mGL[i].mIBO;
-		reallocIBO->stride = sizeof(uint16_t);
-		reallocIBO->count = mGL[i].mIndexData.size();
-		reallocIBO->data = mUpdateTerrainComamandQueue->memcpy(sizeof(uint16_t) * mGL[i].mIndexData.size(), mGL[i].mIndexData.data());
-		reallocIBO->hint = Jikken::BufferUsageHint::eStaticDraw;
+		mRenderData[i].mIboReallocCmd.count = mRenderData[i].mIndexData.size();
+		mRenderData[i].mIboReallocCmd.data = mRenderData[i].mIndexData.data();
+		mUpdateTerrainComamandQueue->addReallocBufferCommand(&mRenderData[i].mIboReallocCmd);
 	}
 	gGraphics->submitCommandQueue(mUpdateTerrainComamandQueue);
 }
@@ -341,19 +350,17 @@ void Chunk::updateTerrainGL()
 void Chunk::render(Jikken::CommandQueue *cmdQueue, RenderPass pass, const double &dt)
 {
 	int renderPass = (pass == RenderPass::eGEOMETRY) ? 0 : 1;
-	if (mGL[renderPass].mIndexData.size() == 0)
+	if (mRenderData[renderPass].mIndexData.size() == 0)
 	{
 		//printf("pass %d has 0 data! We can save from rendering this!\n");
 		return;
 	}
 
 	// Bind VAO
-	auto *bindVAO = cmdQueue->alloc<Jikken::BindVAOCommand>();
-	bindVAO->vertexArray = mGL[renderPass].mVAO;
+	mBindVaoCmd.vertexArray = mRenderData[renderPass].mVAO;
+	cmdQueue->addBindVAOCommand(&mBindVaoCmd);
 
 	// Issue Drawcall
-	auto *draw = cmdQueue->alloc<Jikken::DrawCommand>();
-	draw->primitive = Jikken::PrimitiveType::eTriangles;
-	draw->start = 0;
-	draw->count = mGL[renderPass].mIndexData.size();
+	mDrawCmd.count = static_cast<uint32_t>(mRenderData[renderPass].mIndexData.size());
+	cmdQueue->addDrawCommand(&mDrawCmd);
 }

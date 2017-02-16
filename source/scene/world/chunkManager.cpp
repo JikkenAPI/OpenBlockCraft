@@ -84,6 +84,18 @@ ChunkManager::ChunkManager()
 	gGraphics->bindConstantBuffer(mShader, mSunCBuffer, "Sun", 3);
 
 	mCommandQueue = gGraphics->createCommandQueue();
+
+	mSetShaderCmd.handle = mShader;
+
+	mUpdateViewProjBufferCmd.buffer = mCameraCBuffer;
+	mUpdateViewProjBufferCmd.offset = 0;
+	mUpdateViewProjBufferCmd.dataSize = sizeof(glm::mat4) * 2;
+	mUpdateViewProjBufferCmd.data = mViewProjData;
+
+	mUpdateModelBufferCmd.buffer = mModelMatrixCBuffer;
+	mUpdateModelBufferCmd.offset = 0;
+	mUpdateModelBufferCmd.dataSize = sizeof(glm::mat4);
+
 }
 
 ChunkManager::~ChunkManager()
@@ -119,18 +131,12 @@ void ChunkManager::render(const glm::mat4 &viewMatrix, const glm::mat4 &projMatr
 		return;
 
 	// use shader
-	auto shaderCmd = mCommandQueue->alloc<Jikken::SetShaderCommand>();
-	shaderCmd->handle = mShader;
+	mCommandQueue->addSetShaderCommand(&mSetShaderCmd);
 
 	// Set view/proj matrix
-	glm::mat4 vp[2];
-	vp[0] = projMatrix;
-	vp[1] = viewMatrix;
-	auto viewprojCBuffer = mCommandQueue->alloc<Jikken::UpdateBufferCommand>();
-	viewprojCBuffer->buffer = mCameraCBuffer;
-	viewprojCBuffer->offset = 0;
-	viewprojCBuffer->dataSize = sizeof(glm::mat4) * 2;
-	viewprojCBuffer->data = vp;
+	mViewProjData[0] = projMatrix;
+	mViewProjData[1] = viewMatrix;	
+	mCommandQueue->addUpdateBufferCommand(&mUpdateViewProjBufferCmd);
 
 	// Update frustrum
 	mFrustrum.setVP(viewMatrix, projMatrix);
@@ -147,11 +153,8 @@ void ChunkManager::render(const glm::mat4 &viewMatrix, const glm::mat4 &projMatr
 			model = glm::translate(model, chunk->getPosition());
 
 			// update model matrix ubo
-			auto modelCBuffer = mCommandQueue->alloc<Jikken::UpdateBufferCommand>();
-			modelCBuffer->buffer = mModelMatrixCBuffer;
-			modelCBuffer->offset = 0;
-			modelCBuffer->dataSize = sizeof(glm::mat4);
-			modelCBuffer->data = mCommandQueue->memcpy(sizeof(glm::mat4), &model[0][0]);
+			mUpdateModelBufferCmd.data = &model[0][0];
+			mCommandQueue->addUpdateBufferCommand(&mUpdateModelBufferCmd);
 
 			chunk->render(mCommandQueue, pass, dt);
 		}
