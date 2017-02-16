@@ -11,12 +11,13 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <http://www.gnu.org/licenses/>
 //-----------------------------------------------------------------------------
 
 #include "core/file.hpp"
+#include <cstring>
 
 inline std::string convertAccessFlagsToCFlag(File::AccessFlags flag)
 {
@@ -101,7 +102,7 @@ bool File::write(const std::string &contents)
 		std::printf("Unable to write file %s. Missing write access flag!\n", mFile.c_str());
 		return false;
 	}
-	
+
 	fwrite(contents.c_str(), sizeof(char), contents.length(), mFilePtr);
 	return true;
 }

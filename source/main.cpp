@@ -11,7 +11,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <http://www.gnu.org/licenses/>
 //-----------------------------------------------------------------------------
@@ -114,11 +114,11 @@ void createChunks()
 	{
 		chunksss[++i % NUM_THREADS].push_back(c);
 	}
-	
+
 	std::vector<std::thread*> threads;
 	for (int i = 0; i < NUM_THREADS; ++i)
 	{
-		std::thread *thr = new std::thread([](std::vector<Chunk*> &ch)
+		std::thread *thr = new std::thread([](const std::vector<Chunk*> &ch)
 		{
 			for (Chunk * cccc : ch)
 			{
@@ -162,7 +162,7 @@ void setWorkingDir(const char* argv)
 	_chdir(binPath.c_str());
 }
 
-int main(int argc, const char **argv) 
+int main(int argc, const char **argv)
 {
 	setWorkingDir(argv[0]);
 	Platform::initSubSystems();
