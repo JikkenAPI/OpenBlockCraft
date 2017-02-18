@@ -42,7 +42,7 @@
 Jikken::GraphicsDevice *gGraphics = nullptr;
 Jikken::CommandQueue *queue = nullptr;
 ChunkManager *chunkManager = nullptr;
-Jikken::ClearBufferCommand clearCmd;
+Jikken::BeginFrameCommand beginFrameCmd;
 
 void init()
 {
@@ -70,13 +70,18 @@ void init()
 	//submit queue
 	gGraphics->submitCommandQueue(queue);
 
-	clearCmd.flag = Jikken::ClearBufferFlags::eColor | Jikken::ClearBufferFlags::eDepth;
+	beginFrameCmd.clearFlag = Jikken::ClearBufferFlags::eColor | Jikken::ClearBufferFlags::eDepth;
+	const float clearColor[4] = { 0.329412f, 0.329412f, 0.329412f, 1.0f };
+	//set  beginFrameCmd.clearColor
+	memcpy(beginFrameCmd.clearColor, clearColor, sizeof(clearColor));
+	beginFrameCmd.depth = 1.0f;
+	beginFrameCmd.stencil = 0;
 }
 
 void render(Camera *camera, double dt)
 {
-	// clear command
-	queue->addClearCommand(&clearCmd);
+	// begin frame command and clear default framebuffer
+	queue->addBeginFrameCommand(&beginFrameCmd);
 	gGraphics->submitCommandQueue(queue);
 
 	const glm::mat4 &view = camera->getViewMatrix();
@@ -192,8 +197,6 @@ int main(int argc, const char **argv)
 		// show delta from last frame (value of timer)
 		double fps = timer->getFPS();
 		window->setTitle(std::to_string(static_cast<unsigned long>(fps)) + std::string(" fps"));
-
-		gGraphics->beginFrame();
 
 		// update camera and other objects
 		camera->update(timer->getDelta());
