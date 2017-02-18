@@ -193,12 +193,14 @@ int main(int argc, const char **argv)
 		double fps = timer->getFPS();
 		window->setTitle(std::to_string(static_cast<unsigned long>(fps)) + std::string(" fps"));
 
+		gGraphics->beginFrame();
+
 		// update camera and other objects
 		camera->update(timer->getDelta());
 
 		render(camera, timer->getDelta());
 
-		gGraphics->present();
+		gGraphics->presentFrame();
 		timer->stop();
 	}
 
