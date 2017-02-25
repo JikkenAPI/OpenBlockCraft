@@ -11,7 +11,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <http://www.gnu.org/licenses/>
 //-----------------------------------------------------------------------------
@@ -100,16 +100,16 @@ void Camera::getYawPitch(float &yaw, float &pitch) const
 	pitch = mPitch;
 }
 
-void Camera::update(const double &dt) 
+void Camera::update(const double &dt)
 {
 	float yaw = glm::radians(mYaw);
 	float pitch = glm::radians(mPitch);
 
 	// Calculate front vector.
 	glm::vec3 front(
-		std::cosf(yaw) * std::cosf(pitch),
+		std::cos(yaw) * std::cos(pitch),
 		std::sin(pitch),
-		std::sin(yaw) * std::cosf(pitch)
+		std::sin(yaw) * std::cos(pitch)
 	);
 	mFrontVector = glm::normalize(front);
 

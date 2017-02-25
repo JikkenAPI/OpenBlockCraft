@@ -11,7 +11,7 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <http://www.gnu.org/licenses/>
 //-----------------------------------------------------------------------------
@@ -32,37 +32,56 @@
 #include "core/file.hpp"
 #include "scene/world/chunkManager.hpp"
 #include "core/noise.hpp"
+#ifdef _WIN32
+#include <direct.h>
+#else
+#define _chdir(arg) chdir(arg)
+#include <unistd.h>
+#endif
 
 Jikken::GraphicsDevice *gGraphics = nullptr;
 Jikken::CommandQueue *queue = nullptr;
 ChunkManager *chunkManager = nullptr;
+Jikken::BeginFrameCommand beginFrameCmd;
 
-void initGL()
+void init()
 {
 	queue = gGraphics->createCommandQueue();
-	auto depthCmd = queue->alloc<Jikken::DepthStencilStateCommand>();
-	depthCmd->depthEnabled = true;
-	depthCmd->depthWrite = true;
-	depthCmd->depthFunc = Jikken::DepthFunc::eLess;
+	Jikken::DepthStencilStateCommand depthCmd;
+	depthCmd.depthEnabled = true;
+	depthCmd.depthWrite = true;
+	depthCmd.depthFunc = Jikken::DepthFunc::eLess;
 
-	auto cullCmd = queue->alloc<Jikken::CullStateCommand>();
-	cullCmd->enabled = true;
-	cullCmd->face = Jikken::CullFaceState::eBack;
-	cullCmd->state = Jikken::WindingOrderState::eCCW;
+	Jikken::CullStateCommand cullCmd;
+	cullCmd.enabled = true;
+	cullCmd.face = Jikken::CullFaceState::eBack;
+	cullCmd.state = Jikken::WindingOrderState::eCCW;
 
-	auto blendCmd = queue->alloc<Jikken::BlendStateCommand>();
-	blendCmd->enabled = true;
-	blendCmd->source = Jikken::BlendState::eSrcAlpha;
-	blendCmd->dest = Jikken::BlendState::eOneMinusSrcAlpha;
+	Jikken::BlendStateCommand blendCmd;
+	blendCmd.enabled = true;
+	blendCmd.source = Jikken::BlendState::eSrcAlpha;
+	blendCmd.dest = Jikken::BlendState::eOneMinusSrcAlpha;
 
+	//record commands
+	queue->addDepthStencilStateCommand(&depthCmd);
+	queue->addCullStateCommand(&cullCmd);
+	queue->addBlendStateCommand(&blendCmd);
+
+	//submit queue
 	gGraphics->submitCommandQueue(queue);
+
+	beginFrameCmd.clearFlag = Jikken::ClearBufferFlags::eColor | Jikken::ClearBufferFlags::eDepth;
+	const float clearColor[4] = { 0.329412f, 0.329412f, 0.329412f, 1.0f };
+	//set  beginFrameCmd.clearColor
+	memcpy(beginFrameCmd.clearColor, clearColor, sizeof(clearColor));
+	beginFrameCmd.depth = 1.0f;
+	beginFrameCmd.stencil = 0;
 }
 
 void render(Camera *camera, double dt)
 {
-	// clear command
-	auto clearCmd = queue->alloc<Jikken::ClearBufferCommand>();
-	clearCmd->flag = Jikken::ClearBufferFlags::eColor | Jikken::ClearBufferFlags::eDepth;
+	// begin frame command and clear default framebuffer
+	queue->addBeginFrameCommand(&beginFrameCmd);
 	gGraphics->submitCommandQueue(queue);
 
 	const glm::mat4 &view = camera->getViewMatrix();
@@ -100,11 +119,11 @@ void createChunks()
 	{
 		chunksss[++i % NUM_THREADS].push_back(c);
 	}
-	
+
 	std::vector<std::thread*> threads;
 	for (int i = 0; i < NUM_THREADS; ++i)
 	{
-		std::thread *thr = new std::thread([](std::vector<Chunk*> &ch)
+		std::thread *thr = new std::thread([](const std::vector<Chunk*> &ch)
 		{
 			for (Chunk * cccc : ch)
 			{
@@ -128,11 +147,32 @@ void createChunks()
 	}
 }
 
-int main(int argc, const char **argv) 
+void setWorkingDir(const char* argv)
 {
+	//Get bin dir - temp until jeefs creates a nice resource loading system :p
+	std::string argv_str(argv);
+	std::string binPath;
+#ifdef _WIN32
+	binPath = argv_str.substr(0, argv_str.find_last_of("\\"));
+#elif defined __linux__
+	binPath = argv_str.substr(0, argv_str.find_last_of("/"));
+#elif defined __APPLE__ //ok this is a bit dodgy, need to remove "appname.app/Contents/MacOS/appname
+	binPath = argv_str.substr(0, argv_str.find_last_of("/"));
+	binPath = binPath.substr(0, binPath.find_last_of("/"));
+	binPath = binPath.substr(0, binPath.find_last_of("/"));
+	binPath = binPath.substr(0, binPath.find_last_of("/"));
+#endif
+
+	//change working dir
+	_chdir(binPath.c_str());
+}
+
+int main(int argc, const char **argv)
+{
+	setWorkingDir(argv[0]);
 	Platform::initSubSystems();
 
-	Window* window = Platform::getWindowManager()->createWindow(1440, 900);
+	Window* window = Platform::getWindowManager()->createWindow(1440, 900,Window::API::eOPENGL);
 	Timer *timer = Platform::createTimer();
 	InputManager::get()->setTimer(timer);
 	InputManager::get()->subscribe(window, InputEventType::eKEYPRESSEVENT);
@@ -145,7 +185,7 @@ int main(int argc, const char **argv)
 	InputManager::get()->subscribe(camera, InputEventType::eKEYPRESSEVENT);
 	InputManager::get()->subscribe(camera, InputEventType::eMOUSEMOVEMENTEVENT);
 
-	initGL();
+	init();
 
 	createChunks();
 
@@ -163,7 +203,7 @@ int main(int argc, const char **argv)
 
 		render(camera, timer->getDelta());
 
-		window->swapBuffers();
+		gGraphics->presentFrame();
 		timer->stop();
 	}
 

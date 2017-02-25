@@ -47,7 +47,7 @@ static void APIENTRY debugGLCb(GLenum source, GLenum type, GLuint id, GLenum sev
 GLFWWindow::GLFWWindow(int width, int height, API graphicsApi)
 {
 	mVsync = false;
-
+	Jikken::API jikkenApi = Jikken::API::eNull;
 	// set what kind of graphics we will need.
 	if (graphicsApi == API::eOPENGL)
 		glfwWindowHint(GLFW_CLIENT_API, GLFW_OPENGL_API);
@@ -89,10 +89,14 @@ GLFWWindow::GLFWWindow(int width, int height, API graphicsApi)
 			glDebugMessageCallback(debugGLCb, nullptr);
 		}
 #endif
-
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-		gGraphics = Jikken::createGraphicsDevice(Jikken::API::eOpenGL);
+		jikkenApi = Jikken::API::eOpenGL;		
 	}
+	else if (graphicsApi == API::eVULKAN)
+	{
+		jikkenApi = Jikken::API::eVulkan;
+	}
+
+	gGraphics = Jikken::createGraphicsDevice(jikkenApi,mWindow);
 }
 
 GLFWWindow::~GLFWWindow() 
@@ -109,11 +113,6 @@ void GLFWWindow::setTitle(const std::string &title)
 bool GLFWWindow::shouldClose() const
 {
 	return !!glfwWindowShouldClose(mWindow);
-}
-
-void GLFWWindow::swapBuffers()
-{
-	glfwSwapBuffers(mWindow);
 }
 
 void GLFWWindow::toggleCursor()

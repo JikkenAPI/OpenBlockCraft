@@ -43,6 +43,7 @@ public:
 private:
 	std::vector<Chunk*> mChunks;
 	Frustrum mFrustrum;
+	glm::mat4 mViewProjData[2];
 
 	Jikken::CommandQueue *mCommandQueue;
 	Jikken::ShaderHandle mShader;
@@ -50,6 +51,10 @@ private:
 	Jikken::BufferHandle mNormalCBuffer;
 	Jikken::BufferHandle mModelMatrixCBuffer;
 	Jikken::BufferHandle mSunCBuffer;
+	//commands
+	Jikken::SetShaderCommand mSetShaderCmd;
+	Jikken::UpdateBufferCommand mUpdateViewProjBufferCmd;
+	Jikken::UpdateBufferCommand mUpdateModelBufferCmd;
 };
 
 #endif

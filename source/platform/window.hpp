@@ -31,7 +31,8 @@ public:
 	enum class API
 	{
 		eNONE,
-		eOPENGL
+		eOPENGL,
+		eVULKAN
 	};
 
 public:
@@ -49,8 +50,6 @@ public:
 	virtual void setTitle(const std::string &title) = 0;
 
 	virtual bool shouldClose() const = 0;
-
-	virtual void swapBuffers() = 0;
 
 	virtual void toggleCursor() = 0;
 

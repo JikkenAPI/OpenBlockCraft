@@ -52,21 +52,27 @@ protected:
 
 	void _addFace(int pass, Block &block, const glm::vec3 &pos, const CubeSides &cubeSide);
 
-	struct GL
+	struct RenderData
 	{
 		Jikken::VertexArrayHandle mVAO;
 		Jikken::BufferHandle mVBO;
 		Jikken::BufferHandle mIBO;
+
+		Jikken::ReallocBufferCommand mVboReallocCmd;
+		Jikken::ReallocBufferCommand mIboReallocCmd;
 
 		std::vector<CubeVert> mVisibleMesh;
 		std::vector<uint16_t> mIndexData;
 
 		uint16_t mCurrentIndex;
 	};
-	GL mGL[2];
+	RenderData mRenderData[2];
 
 	Jikken::LayoutHandle mLayout;
 	Jikken::CommandQueue *mUpdateTerrainComamandQueue;
+
+	Jikken::DrawCommand mDrawCmd;
+	Jikken::BindVAOCommand mBindVaoCmd;
 };
 
 #endif

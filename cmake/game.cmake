@@ -56,6 +56,9 @@ set (GAME_INCLUDES
 	thirdparty/openSimplexNoise
 )
 
+#set game root directory so other cmake modules can find any includes/libs if needed
+set(GAME_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR})
+
 if (WIN32)
 	set (GAME_LIBS
 		${GAME_LIBS}
@@ -72,6 +75,11 @@ add_executable(CPPCraft ${GAME_SOURCE})
 target_link_libraries(CPPCraft ${GAME_LIBS})
 target_include_directories(CPPCraft PUBLIC ${GAME_INCLUDES})
 target_compile_definitions(CPPCraft PUBLIC GLEW_STATIC)
+
+#output directory
+set_target_properties(CPPCraft PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG "${CMAKE_CURRENT_SOURCE_DIR}/bin")
+set_target_properties(CPPCraft PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE "${CMAKE_CURRENT_SOURCE_DIR}/bin")
+set_target_properties(CPPCraft PROPERTIES DEBUG_POSTFIX "_debug")
 
 source_group("core" REGULAR_EXPRESSION core/*)
 source_group("core\\geometry" REGULAR_EXPRESSION core/geometry/*)
