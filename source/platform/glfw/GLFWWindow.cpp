@@ -29,7 +29,6 @@ GLFWWindow::GLFWWindow(int width, int height)
 
 GLFWWindow::~GLFWWindow() 
 {
-	Jikken::shutdown();
 	glfwDestroyWindow(mWindow);
 }
 
@@ -47,11 +46,6 @@ void GLFWWindow::toggleCursor()
 {
 	mCursorShowing = !mCursorShowing;
 	glfwSetInputMode(mWindow, GLFW_CURSOR, mCursorShowing ? GLFW_CURSOR_NORMAL : GLFW_CURSOR_DISABLED);
-}
-
-void GLFWWindow::toggleVerticalSync()
-{
-	mVsync = !mVsync;
 }
 
 Jikken::NativeWindowData GLFWWindow::getJikkenNativeWindowData()

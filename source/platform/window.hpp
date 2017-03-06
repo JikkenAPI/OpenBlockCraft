@@ -36,8 +36,6 @@ public:
 		{
 			if (data.key == Input::Key::eESCAPE)
 				toggleCursor();
-			else if (data.key == Input::Key::eF1)
-				toggleVerticalSync();
 		}
 	}
 
@@ -47,12 +45,8 @@ public:
 
 	virtual void toggleCursor() = 0;
 
-	virtual void toggleVerticalSync() = 0;
-
 	virtual Jikken::NativeWindowData getJikkenNativeWindowData() = 0;
 
-protected:
-	bool mVsync = false;
 };
 
 #endif

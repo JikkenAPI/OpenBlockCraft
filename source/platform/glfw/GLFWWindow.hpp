@@ -45,8 +45,6 @@ public:
 
 	virtual void toggleCursor() override;
 
-	virtual void toggleVerticalSync() override;
-
 	virtual Jikken::NativeWindowData getJikkenNativeWindowData() override;
 
 private:
