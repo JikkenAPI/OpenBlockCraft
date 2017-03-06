@@ -56,7 +56,7 @@ Jikken::NativeWindowData GLFWWindow::getJikkenNativeWindowData()
 #elif defined __APPLE__
 	wd.handle = glfwGetCocoaWindow(mWindow);
 #else
-	wd.handle = glfwGetX11Window(mWindow);
+	wd.handle = (void*)(uintptr_t)glfwGetX11Window(mWindow);
 	wd.display = glfwGetX11Display();
 #endif
 	return wd;

@@ -36,7 +36,7 @@ protected:
 	GLFWWindowManager(const GLFWWindowManager &&) = delete;
 
 public:
-	virtual Window* createWindow(int width, int height) override;
+	virtual IWindow* createWindow(int width, int height) override;
 
 	virtual void processEvents() override;
 };

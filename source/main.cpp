@@ -40,7 +40,7 @@
 
 Jikken::CommandQueue *queue = nullptr;
 ChunkManager *chunkManager = nullptr;
-Window *window = nullptr;
+IWindow *window = nullptr;
 Timer *timer = nullptr;
 Jikken::BeginFrameCommand beginFrameCmd;
 

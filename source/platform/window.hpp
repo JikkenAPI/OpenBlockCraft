@@ -23,7 +23,7 @@
 #include "platform/input/iInputListener.hpp"
 #include <jikken/jikken.hpp>
 
-class Window : public IInputListener
+class IWindow : public IInputListener
 {
 	// Only the WindowManager class can allocate/deallocate Window
 	// objects.

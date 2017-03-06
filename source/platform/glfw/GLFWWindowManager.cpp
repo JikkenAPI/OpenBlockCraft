@@ -31,10 +31,10 @@ GLFWWindowManager::~GLFWWindowManager()
 
 }
 
-Window* GLFWWindowManager::createWindow(int width, int height)
+IWindow* GLFWWindowManager::createWindow(int width, int height)
 {
 	GLFWWindow *window = new GLFWWindow(width, height);
-	mWindows.push_back(static_cast<Window*>(window));
+	mWindows.push_back(static_cast<IWindow*>(window));
 
 	// register events.
 	glfwSetKeyCallback(window->mWindow, GLFWCallbacks::keyCallback);
@@ -42,7 +42,7 @@ Window* GLFWWindowManager::createWindow(int width, int height)
 	glfwSetCursorPosCallback(window->mWindow, GLFWCallbacks::mousePositionCallback);
 	glfwSetFramebufferSizeCallback(window->mWindow, GLFWCallbacks::framebufferResizeCallback);
 
-	return static_cast<Window*>(window);
+	return static_cast<IWindow*>(window);
 }
 
 void GLFWWindowManager::processEvents()

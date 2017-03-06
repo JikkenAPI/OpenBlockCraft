@@ -24,7 +24,7 @@
 
 #include "platform/window.hpp"
 
-class GLFWWindow : public Window 
+class GLFWWindow : public IWindow
 {
 	// Only the WindowManager class can allocate/deallocate Window
 	// objects.
