@@ -25,7 +25,6 @@
 
 // temp
 extern ChunkManager *chunkManager;
-extern Jikken::GraphicsDevice *gGraphics;
 
 const int WATER_HEIGHT = 60;
 
@@ -60,30 +59,30 @@ Chunk::Chunk()
 	position.stride = 0;
 	position.type = Jikken::VertexAttributeType::eFLOAT;
 	layouts.push_back(position);
-	mLayout = gGraphics->createVertexInputLayout(layouts);
+	mLayout = Jikken::createVertexInputLayout(layouts);
 
-	mUpdateTerrainComamandQueue = gGraphics->createCommandQueue();
+	mUpdateTerrainComamandQueue = Jikken::createCommandQueue();
 
 	// we have 2 passes. rip me.
 	for (int i = 0; i < 2; i++)
 	{
 		mRenderData[i].mCurrentIndex = 0;
 
-		mRenderData[i].mVBO = gGraphics->createBuffer(
+		mRenderData[i].mVBO = Jikken::createBuffer(
 			Jikken::BufferType::eVertexBuffer,
 			Jikken::BufferUsageHint::eStaticDraw,
 			0,
 			nullptr
 		);
 
-		mRenderData[i].mIBO = gGraphics->createBuffer(
+		mRenderData[i].mIBO = Jikken::createBuffer(
 			Jikken::BufferType::eIndexBuffer,
 			Jikken::BufferUsageHint::eStaticDraw,
 			0,
 			nullptr
 		);
 
-		mRenderData[i].mVAO = gGraphics->createVAO(mLayout, mRenderData[i].mVBO, mRenderData[i].mIBO);
+		mRenderData[i].mVAO = Jikken::createVAO(mLayout, mRenderData[i].mVBO, mRenderData[i].mIBO);
 
 		mRenderData[i].mVboReallocCmd.count = 0;
 		mRenderData[i].mVboReallocCmd.data = nullptr;
@@ -113,12 +112,12 @@ Chunk::~Chunk()
 	// free GL objects.
 	for (int i = 0; i < 2; i++)
 	{
-		gGraphics->deleteBuffer(mRenderData[i].mVBO);
-		gGraphics->deleteBuffer(mRenderData[i].mIBO);
-		gGraphics->deleteVAO(mRenderData[i].mVAO);
+		Jikken::deleteBuffer(mRenderData[i].mVBO);
+		Jikken::deleteBuffer(mRenderData[i].mIBO);
+		Jikken::deleteVAO(mRenderData[i].mVAO);
 	}
 
-	gGraphics->deleteCommandQueue(mUpdateTerrainComamandQueue);
+	Jikken::deleteCommandQueue(mUpdateTerrainComamandQueue);
 }
 
 void Chunk::genTerrain()
@@ -344,7 +343,7 @@ void Chunk::updateTerrainGL()
 		mRenderData[i].mIboReallocCmd.data = mRenderData[i].mIndexData.data();
 		mUpdateTerrainComamandQueue->addReallocBufferCommand(&mRenderData[i].mIboReallocCmd);
 	}
-	gGraphics->submitCommandQueue(mUpdateTerrainComamandQueue);
+	Jikken::submitCommandQueue(mUpdateTerrainComamandQueue);
 }
 
 void Chunk::render(Jikken::CommandQueue *cmdQueue, RenderPass pass, const double &dt)

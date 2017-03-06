@@ -21,19 +21,13 @@
 
 #include <string>
 #include "platform/input/iInputListener.hpp"
+#include <jikken/jikken.hpp>
 
 class Window : public IInputListener
 {
 	// Only the WindowManager class can allocate/deallocate Window
 	// objects.
 	friend class WindowManager;
-public:
-	enum class API
-	{
-		eNONE,
-		eOPENGL,
-		eVULKAN
-	};
 
 public:
 	virtual void onKeyPressEvent(const KeyPressEventData &data) override 
@@ -54,6 +48,8 @@ public:
 	virtual void toggleCursor() = 0;
 
 	virtual void toggleVerticalSync() = 0;
+
+	virtual Jikken::NativeWindowData getJikkenNativeWindowData() = 0;
 
 protected:
 	bool mVsync = false;

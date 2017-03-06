@@ -31,7 +31,7 @@ protected:
 	virtual ~WindowManager();
 
 public:
-	virtual Window* createWindow(int width, int height, Window::API graphicsApi = Window::API::eOPENGL) = 0;
+	virtual Window* createWindow(int width, int height) = 0;
 
 	virtual void processEvents() = 0;
 

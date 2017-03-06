@@ -36,7 +36,7 @@ protected:
 	GLFWWindowManager(const GLFWWindowManager &&) = delete;
 
 public:
-	virtual Window* createWindow(int width, int height, Window::API graphicsApi = Window::API::eOPENGL) override;
+	virtual Window* createWindow(int width, int height) override;
 
 	virtual void processEvents() override;
 };
@@ -48,6 +48,8 @@ namespace GLFWCallbacks
 	void mouseButtonCallback(GLFWwindow *window, int button, int action, int mods);
 
 	void mousePositionCallback(GLFWwindow *window, double xPos, double yPos);
+
+	void framebufferResizeCallback(GLFWwindow *window, int width, int height);
 }
 
 #endif
