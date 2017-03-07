@@ -154,13 +154,13 @@ void setWorkingDir(const char* argv)
 	std::string binPath;
 #ifdef _WIN32
 	binPath = argv_str.substr(0, argv_str.find_last_of("\\"));
-#elif defined __linux__
-	binPath = argv_str.substr(0, argv_str.find_last_of("/"));
 #elif defined __APPLE__ //ok this is a bit dodgy, need to remove "appname.app/Contents/MacOS/appname
 	binPath = argv_str.substr(0, argv_str.find_last_of("/"));
 	binPath = binPath.substr(0, binPath.find_last_of("/"));
 	binPath = binPath.substr(0, binPath.find_last_of("/"));
 	binPath = binPath.substr(0, binPath.find_last_of("/"));
+#else
+	binPath = argv_str.substr(0, argv_str.find_last_of("/"));
 #endif
 
 	//change working dir

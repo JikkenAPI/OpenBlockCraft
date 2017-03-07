@@ -10,6 +10,20 @@ elseif(APPLE)
 	set(CMAKE_OSX_SYSROOT /Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX10.11.sdk)
 endif()
 
+#FreeBSD
+if(CMAKE_SYSTEM_NAME STREQUAL FreeBSD)
+
+	if($ENV{LOCALBASE})
+  		set(FREEBSD_LOCALBASE $ENV{LOCALBASE})
+	else()
+  		set(FREEBSD_LOCALBASE /usr/local)
+	endif()
+
+	include_directories(${FREEBSD_LOCALBASE}/include)
+	link_directories(${FREEBSD_LOCALBASE}/lib)
+
+endif()
+
 add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glfw")
 include("cmake/compilerFlags.cmake")
 include("cmake/openSimplexNoise.cmake")
