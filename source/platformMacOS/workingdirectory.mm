@@ -11,31 +11,28 @@
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
 // GNU General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU General Public License
 // along with this program. If not, see <http://www.gnu.org/licenses/>
 //-----------------------------------------------------------------------------
 
-#ifndef _PLATFORM_PLATFORM_H_
-#define _PLATFORM_PLATFORM_H_
-
-#include <cassert>
-#include "platform/timer.hpp"
-#include "platform/windowManager.hpp"
+#import <Cocoa/Cocoa.h>
 
 namespace Platform
 {
-	void initSubSystems();
-
-	void cleanupSubSystems();
-
-	Timer* createTimer();
-
-	void destroyTimer(Timer *timer);
-
-	WindowManager* getWindowManager();
-    
-    void setWorkingDirectory(const char *dir);
+    void setWorkingDirectory(const char *dir)
+    {
+        NSString *path = [[NSBundle mainBundle] bundlePath];
+        
+        // For debugging, sometimes we want to put the executable within the bin folder.
+        // We have to strip off the bin folder.
+        if ([[path lastPathComponent] isEqualToString:@"bin"])
+        {
+            // strip off bin
+            path = [path stringByDeletingLastPathComponent];
+        }
+        NSLog(@"%@", path);
+        
+        [[NSFileManager defaultManager] changeCurrentDirectoryPath:path];
+    }
 }
-
-#endif

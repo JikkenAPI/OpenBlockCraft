@@ -47,8 +47,8 @@ ChunkManager::ChunkManager()
 
 	// Create shader.
 	std::vector<Jikken::ShaderDetails> details;
-	details.push_back({ "../Assets/chunkV.glsl", Jikken::ShaderStage::eVertex });
-	details.push_back({ "../Assets/chunkF.glsl", Jikken::ShaderStage::eFragment });
+	details.push_back({ "Assets/chunkV.glsl", Jikken::ShaderStage::eVertex });
+	details.push_back({ "Assets/chunkF.glsl", Jikken::ShaderStage::eFragment });
 	mShader = gGraphics->createShader(details);
 
 	// Create constant buffers

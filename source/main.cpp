@@ -147,29 +147,9 @@ void createChunks()
 	}
 }
 
-void setWorkingDir(const char* argv)
-{
-	//Get bin dir - temp until jeefs creates a nice resource loading system :p
-	std::string argv_str(argv);
-	std::string binPath;
-#ifdef _WIN32
-	binPath = argv_str.substr(0, argv_str.find_last_of("\\"));
-#elif defined __linux__
-	binPath = argv_str.substr(0, argv_str.find_last_of("/"));
-#elif defined __APPLE__ //ok this is a bit dodgy, need to remove "appname.app/Contents/MacOS/appname
-	binPath = argv_str.substr(0, argv_str.find_last_of("/"));
-	binPath = binPath.substr(0, binPath.find_last_of("/"));
-	binPath = binPath.substr(0, binPath.find_last_of("/"));
-	binPath = binPath.substr(0, binPath.find_last_of("/"));
-#endif
-
-	//change working dir
-	_chdir(binPath.c_str());
-}
-
 int main(int argc, const char **argv)
 {
-	setWorkingDir(argv[0]);
+    Platform::setWorkingDirectory(argv[0]);
 	Platform::initSubSystems();
 
 	Window* window = Platform::getWindowManager()->createWindow(1440, 900,Window::API::eOPENGL);
