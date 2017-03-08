@@ -43,6 +43,14 @@ set (GAME_SOURCE
 	source/scene/world/chunkManager.hpp
 )
 
+if (APPLE)
+	set (GAME_SOURCE
+		${GAME_SOURCE}
+		
+		source/platformMacOS/workingdirectory.mm
+	)
+endif()
+
 set (GAME_LIBS
 	glfw
 	OpenSimplexNoise
@@ -68,6 +76,7 @@ elseif (APPLE)
 	set (GAME_LIBS
 		${GAME_LIBS}
 		"-framework OpenGL"
+		"-framework Cocoa"
 	)
 endif ()
 
@@ -89,6 +98,10 @@ source_group("platform\\glfw" REGULAR_EXPRESSION platform/glfw/*)
 source_group("platform\\input" REGULAR_EXPRESSION platform/input/*)
 source_group("scene" REGULAR_EXPRESSION scene/*)
 source_group("scene\\world" REGULAR_EXPRESSION scene/world/*)
+
+if (APPLE)
+	source_group("platformMacOS" REGULAR_EXPRESSION platformMacOS/*)
+endif()
 
 # Set Visual Studio startup project(cmake 3.6+)
 if((${CMAKE_VERSION} VERSION_EQUAL 3.6.0) OR (${CMAKE_VERSION} VERSION_GREATER 3.6.0) AND MSVC)
