@@ -20,19 +20,18 @@
 
 namespace Platform
 {
-    void setWorkingDirectory(const char *dir)
-    {
-        NSString *path = [[NSBundle mainBundle] bundlePath];
-        
-        // For debugging, sometimes we want to put the executable within the bin folder.
-        // We have to strip off the bin folder.
-        if ([[path lastPathComponent] isEqualToString:@"bin"])
-        {
-            // strip off bin
-            path = [path stringByDeletingLastPathComponent];
-        }
-        NSLog(@"%@", path);
-        
-        [[NSFileManager defaultManager] changeCurrentDirectoryPath:path];
-    }
+	void setWorkingDirectory(const char *dir)
+	{
+		NSString *path = [[NSBundle mainBundle] bundlePath];
+		
+		// For debugging, sometimes we want to put the executable within the bin folder.
+		// We have to strip off the bin folder.
+		if ([[path lastPathComponent] isEqualToString:@"bin"])
+		{
+			// strip off bin
+			path = [path stringByDeletingLastPathComponent];
+		}
+		
+		[[NSFileManager defaultManager] changeCurrentDirectoryPath:path];
+	}
 }
