@@ -75,6 +75,8 @@ if (WIN32)
 elseif (APPLE)
 	set (GAME_LIBS
 		${GAME_LIBS}
+		"-framework AppKit"
+		"-framework Foundation"
 		"-framework OpenGL"
 		"-framework Cocoa"
 	)
