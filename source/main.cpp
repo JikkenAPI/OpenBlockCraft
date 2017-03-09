@@ -19,7 +19,6 @@
 #include <thread>
 #include <cstdlib>
 #include <string>
-#include <jikken/graphicsDevice.hpp>
 #include <jikken/jikken.hpp>
 #include <open-simplex-noise.h>
 #include <glm/gtc/matrix_transform.hpp>
@@ -39,14 +38,15 @@
 #include <unistd.h>
 #endif
 
-Jikken::GraphicsDevice *gGraphics = nullptr;
 Jikken::CommandQueue *queue = nullptr;
 ChunkManager *chunkManager = nullptr;
+IWindow *window = nullptr;
+Timer *timer = nullptr;
 Jikken::BeginFrameCommand beginFrameCmd;
 
 void init()
 {
-	queue = gGraphics->createCommandQueue();
+	queue = Jikken::createCommandQueue();
 	Jikken::DepthStencilStateCommand depthCmd;
 	depthCmd.depthEnabled = true;
 	depthCmd.depthWrite = true;
@@ -68,7 +68,7 @@ void init()
 	queue->addBlendStateCommand(&blendCmd);
 
 	//submit queue
-	gGraphics->submitCommandQueue(queue);
+	Jikken::submitCommandQueue(queue);
 
 	beginFrameCmd.clearFlag = Jikken::ClearBufferFlags::eColor | Jikken::ClearBufferFlags::eDepth;
 	const float clearColor[4] = { 0.329412f, 0.329412f, 0.329412f, 1.0f };
@@ -82,7 +82,7 @@ void render(Camera *camera, double dt)
 {
 	// begin frame command and clear default framebuffer
 	queue->addBeginFrameCommand(&beginFrameCmd);
-	gGraphics->submitCommandQueue(queue);
+	Jikken::submitCommandQueue(queue);
 
 	const glm::mat4 &view = camera->getViewMatrix();
 	glm::mat4 proj = proj = glm::perspective(90.0f, 1440.0f / 900.0f, 0.1f, 500.0f);
@@ -147,16 +147,40 @@ void createChunks()
 	}
 }
 
+void cleanup()
+{
+	delete chunkManager;
+	Jikken::deleteCommandQueue(queue);
+	Jikken::shutdown();
+	Platform::getWindowManager()->destroyWindow(window);
+	Platform::destroyTimer(timer);
+	Platform::cleanupSubSystems();
+}
+
 int main(int argc, const char **argv)
 {
     Platform::setWorkingDirectory(argv[0]);
 	Platform::initSubSystems();
 
-	Window* window = Platform::getWindowManager()->createWindow(1440, 900,Window::API::eOPENGL);
-	Timer *timer = Platform::createTimer();
+	window = Platform::getWindowManager()->createWindow(1440, 900);
+	timer = Platform::createTimer();
 	InputManager::get()->setTimer(timer);
 	InputManager::get()->subscribe(window, InputEventType::eKEYPRESSEVENT);
 	Noise::get()->setSeed(696969);
+	//init jikken
+	Jikken::NativeWindowData wd = window->getJikkenNativeWindowData();
+	Jikken::ContextConfig cc;
+#ifdef _DEBUG
+	cc.debugEnabled = true;
+#endif
+	if (!Jikken::init(Jikken::GraphicsApi::eOpenGL, cc, wd))
+	{
+		std::printf("Failed to init Jikken\n");
+		cleanup();
+		return 1;
+	}
+
+	//init chunk manager
 	chunkManager = new ChunkManager();
 
 	// create camera
@@ -168,7 +192,7 @@ int main(int argc, const char **argv)
 	init();
 
 	createChunks();
-
+	
 	while (!window->shouldClose())
 	{
 		timer->start();
@@ -183,14 +207,10 @@ int main(int argc, const char **argv)
 
 		render(camera, timer->getDelta());
 
-		gGraphics->presentFrame();
+		Jikken::presentFrame();
 		timer->stop();
 	}
 
-	gGraphics->deleteCommandQueue(queue);
-	delete chunkManager;
-	Platform::getWindowManager()->destroyWindow(window);
-	Platform::destroyTimer(timer);
-	Platform::cleanupSubSystems();
+	cleanup();
 	return 0;
 }

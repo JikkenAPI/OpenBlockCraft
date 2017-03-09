@@ -23,11 +23,11 @@
 WindowManager::~WindowManager()
 {
 	// cleanup all windows
-	for (Window *window : mWindows)
+	for (IWindow *window : mWindows)
 		delete window;
 }
 
-void WindowManager::destroyWindow(Window *window)
+void WindowManager::destroyWindow(IWindow *window)
 {
 	// remove from window vector and delete the window
 	auto position = std::find(mWindows.begin(), mWindows.end(), window);
@@ -39,7 +39,7 @@ void WindowManager::destroyWindow(Window *window)
 	}
 }
 
-Window* WindowManager::getPrimaryWindow() const
+IWindow* WindowManager::getPrimaryWindow() const
 {
 	// We need at least 1 window allocated!
 	assert(mWindows.size() != 0);

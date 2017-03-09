@@ -31,16 +31,16 @@ protected:
 	virtual ~WindowManager();
 
 public:
-	virtual Window* createWindow(int width, int height, Window::API graphicsApi = Window::API::eOPENGL) = 0;
+	virtual IWindow* createWindow(int width, int height) = 0;
 
 	virtual void processEvents() = 0;
 
-	void destroyWindow(Window *window);
+	void destroyWindow(IWindow *window);
 
-	Window* getPrimaryWindow() const;
+	IWindow* getPrimaryWindow() const;
 
 protected:
-	std::vector<Window*> mWindows;
+	std::vector<IWindow*> mWindows;
 };
 
 #endif

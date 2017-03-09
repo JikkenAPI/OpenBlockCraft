@@ -24,7 +24,7 @@
 
 #include "platform/window.hpp"
 
-class GLFWWindow : public Window 
+class GLFWWindow : public IWindow
 {
 	// Only the WindowManager class can allocate/deallocate Window
 	// objects.
@@ -32,7 +32,7 @@ class GLFWWindow : public Window
 
 	// Restriction of allocation.
 private:
-	GLFWWindow(int width, int height, API);
+	GLFWWindow(int width, int height);
 	~GLFWWindow();
 
 	// no copy constructor
@@ -45,7 +45,7 @@ public:
 
 	virtual void toggleCursor() override;
 
-	virtual void toggleVerticalSync() override;
+	virtual Jikken::NativeWindowData getJikkenNativeWindowData() override;
 
 private:
 	GLFWwindow *mWindow;

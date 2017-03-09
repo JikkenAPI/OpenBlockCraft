@@ -31,17 +31,18 @@ GLFWWindowManager::~GLFWWindowManager()
 
 }
 
-Window* GLFWWindowManager::createWindow(int width, int height, Window::API graphicsApi)
+IWindow* GLFWWindowManager::createWindow(int width, int height)
 {
-	GLFWWindow *window = new GLFWWindow(width, height, graphicsApi);
-	mWindows.push_back(static_cast<Window*>(window));
+	GLFWWindow *window = new GLFWWindow(width, height);
+	mWindows.push_back(static_cast<IWindow*>(window));
 
 	// register events.
 	glfwSetKeyCallback(window->mWindow, GLFWCallbacks::keyCallback);
 	glfwSetMouseButtonCallback(window->mWindow, GLFWCallbacks::mouseButtonCallback);
 	glfwSetCursorPosCallback(window->mWindow, GLFWCallbacks::mousePositionCallback);
+	glfwSetFramebufferSizeCallback(window->mWindow, GLFWCallbacks::framebufferResizeCallback);
 
-	return static_cast<Window*>(window);
+	return static_cast<IWindow*>(window);
 }
 
 void GLFWWindowManager::processEvents()
@@ -99,5 +100,10 @@ namespace GLFWCallbacks
 		data.y = yPos;
 
 		InputManager::get()->fireCallback(InputEventType::eMOUSEMOVEMENTEVENT, data);
+	}
+
+	void framebufferResizeCallback(GLFWwindow *window, int width, int height)
+	{
+		Jikken::resize(width, height);
 	}
 }

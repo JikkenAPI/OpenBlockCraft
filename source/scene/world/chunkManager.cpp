@@ -19,7 +19,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include "scene/world/chunkManager.hpp"
 
-extern Jikken::GraphicsDevice *gGraphics;
 
 // For INITIAL WORLD threaded chunk loading:
 // 1. Create first chunk.
@@ -49,28 +48,28 @@ ChunkManager::ChunkManager()
 	std::vector<Jikken::ShaderDetails> details;
 	details.push_back({ "Assets/chunkV.glsl", Jikken::ShaderStage::eVertex });
 	details.push_back({ "Assets/chunkF.glsl", Jikken::ShaderStage::eFragment });
-	mShader = gGraphics->createShader(details);
+	mShader = Jikken::createShader(details);
 
 	// Create constant buffers
-	mCameraCBuffer = gGraphics->createBuffer(
+	mCameraCBuffer = Jikken::createBuffer(
 		Jikken::BufferType::eConstantBuffer,
 		Jikken::BufferUsageHint::eDynamicDraw,
 		sizeof(glm::mat4) * 2,
 		nullptr
 	);
-	mNormalCBuffer = gGraphics->createBuffer(
+	mNormalCBuffer = Jikken::createBuffer(
 		Jikken::BufferType::eConstantBuffer,
 		Jikken::BufferUsageHint::eStaticDraw,
 		sizeof(glm::vec4) * 6,
 		&sCubeFaceNormals[0][0]
 	);
-	mModelMatrixCBuffer = gGraphics->createBuffer(
+	mModelMatrixCBuffer = Jikken::createBuffer(
 		Jikken::BufferType::eConstantBuffer,
 		Jikken::BufferUsageHint::eDynamicDraw,
 		sizeof(glm::mat4),
 		nullptr
 	);
-	mSunCBuffer = gGraphics->createBuffer(
+	mSunCBuffer = Jikken::createBuffer(
 		Jikken::BufferType::eConstantBuffer,
 		Jikken::BufferUsageHint::eStaticDraw,
 		sizeof(SunUBOData),
@@ -78,12 +77,12 @@ ChunkManager::ChunkManager()
 	);
 
 	// Bind UBOs to shader
-	gGraphics->bindConstantBuffer(mShader, mCameraCBuffer, "Camera", 0);
-	gGraphics->bindConstantBuffer(mShader, mNormalCBuffer, "Normals", 1);
-	gGraphics->bindConstantBuffer(mShader, mModelMatrixCBuffer, "ChunkModelMatrix", 2);
-	gGraphics->bindConstantBuffer(mShader, mSunCBuffer, "Sun", 3);
+	Jikken::bindConstantBuffer(mShader, mCameraCBuffer, "Camera", 0);
+	Jikken::bindConstantBuffer(mShader, mNormalCBuffer, "Normals", 1);
+	Jikken::bindConstantBuffer(mShader, mModelMatrixCBuffer, "ChunkModelMatrix", 2);
+	Jikken::bindConstantBuffer(mShader, mSunCBuffer, "Sun", 3);
 
-	mCommandQueue = gGraphics->createCommandQueue();
+	mCommandQueue = Jikken::createCommandQueue();
 
 	mSetShaderCmd.handle = mShader;
 
@@ -100,13 +99,13 @@ ChunkManager::ChunkManager()
 
 ChunkManager::~ChunkManager()
 {
-	gGraphics->deleteCommandQueue(mCommandQueue);
+	Jikken::deleteCommandQueue(mCommandQueue);
 
-	gGraphics->deleteBuffer(mCameraCBuffer);
-	gGraphics->deleteBuffer(mNormalCBuffer);
-	gGraphics->deleteBuffer(mModelMatrixCBuffer);
-	gGraphics->deleteBuffer(mSunCBuffer);
-	gGraphics->deleteShader(mShader);
+	Jikken::deleteBuffer(mCameraCBuffer);
+	Jikken::deleteBuffer(mNormalCBuffer);
+	Jikken::deleteBuffer(mModelMatrixCBuffer);
+	Jikken::deleteBuffer(mSunCBuffer);
+	Jikken::deleteShader(mShader);
 }
 
 void ChunkManager::createChunkAtPosition(const glm::vec3 &pos)
@@ -161,7 +160,7 @@ void ChunkManager::render(const glm::mat4 &viewMatrix, const glm::mat4 &projMatr
 	}
 
 	// submit command queue
-	gGraphics->submitCommandQueue(mCommandQueue);
+	Jikken::submitCommandQueue(mCommandQueue);
 }
 
 const std::vector<Chunk*>& ChunkManager::getChunks() const
