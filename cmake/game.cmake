@@ -47,7 +47,19 @@ if (APPLE)
 	set (GAME_SOURCE
 		${GAME_SOURCE}
 		
-		source/platformMacOS/workingdirectory.mm
+		source/platform/macOS/workingdirectory.mm
+	)
+elseif(WIN32)
+	set (GAME_SOURCE
+		${GAME_SOURCE}
+		
+		source/platform/win32/workingDirectory.cpp
+	)
+elseif(UNIX)
+	set (GAME_SOURCE
+		${GAME_SOURCE}
+		
+		source/platform/unix/workingDirectory.cpp
 	)
 endif()
 
@@ -110,7 +122,11 @@ source_group("scene" REGULAR_EXPRESSION scene/*)
 source_group("scene\\world" REGULAR_EXPRESSION scene/world/*)
 
 if (APPLE)
-	source_group("platformMacOS" REGULAR_EXPRESSION platformMacOS/*)
+	source_group("platform\\MacOS" REGULAR_EXPRESSION platform/macOS/*)
+elseif(WIN32)
+	source_group("platform\\Win32" REGULAR_EXPRESSION platform/win32/*)
+elseif(UNIX)
+	source_group("platform\\Unix" REGULAR_EXPRESSION platform/unix/*)
 endif()
 
 # Set Visual Studio startup project(cmake 3.6+)
