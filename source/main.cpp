@@ -31,12 +31,6 @@
 #include "core/file.hpp"
 #include "scene/world/chunkManager.hpp"
 #include "core/noise.hpp"
-#ifdef _WIN32
-#include <direct.h>
-#else
-#define _chdir(arg) chdir(arg)
-#include <unistd.h>
-#endif
 
 Jikken::CommandQueue *queue = nullptr;
 ChunkManager *chunkManager = nullptr;
