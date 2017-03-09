@@ -20,7 +20,6 @@
 #define _SCENE_WORLD_CHUNK_HPP_
 
 #include <vector>
-#include <GL/glew.h>
 #include <jikken/jikken.hpp>
 #include "scene/sceneObject.hpp"
 #include "scene/world/block.hpp"
