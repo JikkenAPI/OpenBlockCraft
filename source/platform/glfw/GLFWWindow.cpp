@@ -51,6 +51,7 @@ void GLFWWindow::toggleCursor()
 Jikken::NativeWindowData GLFWWindow::getJikkenNativeWindowData()
 {
 	Jikken::NativeWindowData wd = {};
+	glfwGetFramebufferSize(mWindow, &wd.fbWidth, &wd.fbHeight);
 #ifdef _WIN32
 	wd.handle = glfwGetWin32Window(mWindow);
 #elif defined __APPLE__
