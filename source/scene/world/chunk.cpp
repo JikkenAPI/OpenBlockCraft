@@ -68,33 +68,9 @@ Chunk::Chunk()
 	{
 		mRenderData[i].mCurrentIndex = 0;
 
-		mRenderData[i].mVBO = Jikken::createBuffer(
-			Jikken::BufferType::eVertexBuffer,
-			Jikken::BufferUsageHint::eStatic,
-			0,
-			nullptr
-		);
-
-		mRenderData[i].mIBO = Jikken::createBuffer(
-			Jikken::BufferType::eIndexBuffer,
-			Jikken::BufferUsageHint::eStatic,
-			0,
-			nullptr
-		);
-
+		mRenderData[i].mVBO = Jikken::createBuffer(Jikken::BufferType::eVertexBuffer);
+		mRenderData[i].mIBO = Jikken::createBuffer(Jikken::BufferType::eIndexBuffer);
 		mRenderData[i].mVAO = Jikken::createVAO(mLayout, mRenderData[i].mVBO, mRenderData[i].mIBO);
-
-		mRenderData[i].mVboReallocCmd.count = 0;
-		mRenderData[i].mVboReallocCmd.data = nullptr;
-		mRenderData[i].mVboReallocCmd.buffer = mRenderData[i].mVBO;
-		mRenderData[i].mVboReallocCmd.stride = sizeof(CubeVert);
-		mRenderData[i].mVboReallocCmd.hint = Jikken::BufferUsageHint::eStatic;
-
-		mRenderData[i].mIboReallocCmd.count = 0;
-		mRenderData[i].mIboReallocCmd.data = nullptr;
-		mRenderData[i].mIboReallocCmd.buffer = mRenderData[i].mIBO;
-		mRenderData[i].mIboReallocCmd.stride = sizeof(uint16_t);
-		mRenderData[i].mIboReallocCmd.hint = Jikken::BufferUsageHint::eStatic;
 	}
 
 	mDrawCmd.primitive = Jikken::PrimitiveType::eTriangles;
@@ -335,14 +311,20 @@ void Chunk::updateTerrainGL()
 {
 	for (int i = 0; i < 2; i++)
 	{
-		mRenderData[i].mVboReallocCmd.count = mRenderData[i].mVisibleMesh.size();
-		mRenderData[i].mVboReallocCmd.data = mRenderData[i].mVisibleMesh.data();
-		mUpdateTerrainComamandQueue->addReallocBufferCommand(&mRenderData[i].mVboReallocCmd);
+		mRenderData[i].mVboAllocCmd.dataSize = mRenderData[i].mVisibleMesh.size() * sizeof(CubeVert);
+		mRenderData[i].mVboAllocCmd.data = mRenderData[i].mVisibleMesh.data();
+		mRenderData[i].mVboAllocCmd.buffer = mRenderData[i].mVBO;
+		mRenderData[i].mVboAllocCmd.hint = Jikken::BufferUsageHint::eImmutable;
 
-		mRenderData[i].mIboReallocCmd.count = mRenderData[i].mIndexData.size();
-		mRenderData[i].mIboReallocCmd.data = mRenderData[i].mIndexData.data();
-		mUpdateTerrainComamandQueue->addReallocBufferCommand(&mRenderData[i].mIboReallocCmd);
+		mRenderData[i].mIboAllocCmd.dataSize = mRenderData[i].mIndexData.size() * sizeof(uint16_t);
+		mRenderData[i].mIboAllocCmd.data = mRenderData[i].mIndexData.data();
+		mRenderData[i].mIboAllocCmd.buffer = mRenderData[i].mIBO;
+		mRenderData[i].mIboAllocCmd.hint = Jikken::BufferUsageHint::eImmutable;
+
+		mUpdateTerrainComamandQueue->addAllocBufferCommand(&mRenderData[i].mVboAllocCmd);
+		mUpdateTerrainComamandQueue->addAllocBufferCommand(&mRenderData[i].mIboAllocCmd);
 	}
+
 	Jikken::submitCommandQueue(mUpdateTerrainComamandQueue);
 }
 

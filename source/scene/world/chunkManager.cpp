@@ -40,9 +40,13 @@ struct
 
 ChunkManager::ChunkManager()
 {
+
 	SunUBOData.direction = glm::vec4(0.0f, -1.0f, 0.0f, 0.0f);
 	SunUBOData.ambient = glm::vec4(0.1f, 0.1f, 0.1f, 0.0f);
 	SunUBOData.diffuse = glm::vec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+	// Create command queue
+	mCommandQueue = Jikken::createCommandQueue();
 
 	// Create shader.
 	std::vector<Jikken::ShaderDetails> details;
@@ -51,38 +55,45 @@ ChunkManager::ChunkManager()
 	mShader = Jikken::createShader(details);
 
 	// Create constant buffers
-	mCameraCBuffer = Jikken::createBuffer(
-		Jikken::BufferType::eConstantBuffer,
-		Jikken::BufferUsageHint::eDynamic,
-		sizeof(glm::mat4) * 2,
-		nullptr
-	);
-	mNormalCBuffer = Jikken::createBuffer(
-		Jikken::BufferType::eConstantBuffer,
-		Jikken::BufferUsageHint::eStatic,
-		sizeof(glm::vec4) * 6,
-		&sCubeFaceNormals[0][0]
-	);
-	mModelMatrixCBuffer = Jikken::createBuffer(
-		Jikken::BufferType::eConstantBuffer,
-		Jikken::BufferUsageHint::eDynamic,
-		sizeof(glm::mat4),
-		nullptr
-	);
-	mSunCBuffer = Jikken::createBuffer(
-		Jikken::BufferType::eConstantBuffer,
-		Jikken::BufferUsageHint::eStatic,
-		sizeof(SunUBOData),
-		reinterpret_cast<float*>(&SunUBOData)
-	);
+	mCameraCBuffer = Jikken::createBuffer(Jikken::BufferType::eConstantBuffer);
+	mNormalCBuffer = Jikken::createBuffer(Jikken::BufferType::eConstantBuffer);
+	mModelMatrixCBuffer = Jikken::createBuffer(Jikken::BufferType::eConstantBuffer);
+	mSunCBuffer = Jikken::createBuffer(Jikken::BufferType::eConstantBuffer);
+	
+	// Allocate the constant buffers
+	Jikken::AllocBufferCommand allocCmd = {};
+	allocCmd.buffer = mCameraCBuffer;
+	allocCmd.dataSize = sizeof(glm::mat4) * 2;
+	allocCmd.data = nullptr;
+	allocCmd.hint = Jikken::BufferUsageHint::eDynamic;
+	mCommandQueue->addAllocBufferCommand(&allocCmd);
+
+	allocCmd.buffer = mNormalCBuffer;
+	allocCmd.dataSize = sizeof(glm::vec4) * 6;
+	allocCmd.data = &sCubeFaceNormals[0][0];
+	allocCmd.hint = Jikken::BufferUsageHint::eStatic;
+	mCommandQueue->addAllocBufferCommand(&allocCmd);
+
+	allocCmd.buffer = mModelMatrixCBuffer;
+	allocCmd.dataSize = sizeof(glm::mat4);
+	allocCmd.data = nullptr;
+	allocCmd.hint = Jikken::BufferUsageHint::eDynamic;
+	mCommandQueue->addAllocBufferCommand(&allocCmd);
+
+	allocCmd.buffer = mSunCBuffer;
+	allocCmd.dataSize = sizeof(SunUBOData);
+	allocCmd.data = reinterpret_cast<void*>(&SunUBOData);
+	allocCmd.hint = Jikken::BufferUsageHint::eDynamic;
+	mCommandQueue->addAllocBufferCommand(&allocCmd);
+
+	//submit command buffer
+	Jikken::submitCommandQueue(mCommandQueue);
 
 	// Bind UBOs to shader
 	Jikken::bindConstantBuffer(mShader, mCameraCBuffer, "Camera", 0);
 	Jikken::bindConstantBuffer(mShader, mNormalCBuffer, "Normals", 1);
 	Jikken::bindConstantBuffer(mShader, mModelMatrixCBuffer, "ChunkModelMatrix", 2);
 	Jikken::bindConstantBuffer(mShader, mSunCBuffer, "Sun", 3);
-
-	mCommandQueue = Jikken::createCommandQueue();
 
 	mSetShaderCmd.handle = mShader;
 

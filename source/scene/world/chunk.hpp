@@ -57,8 +57,8 @@ protected:
 		Jikken::BufferHandle mVBO;
 		Jikken::BufferHandle mIBO;
 
-		Jikken::ReallocBufferCommand mVboReallocCmd;
-		Jikken::ReallocBufferCommand mIboReallocCmd;
+		Jikken::AllocBufferCommand mVboAllocCmd;
+		Jikken::AllocBufferCommand mIboAllocCmd;
 
 		std::vector<CubeVert> mVisibleMesh;
 		std::vector<uint16_t> mIndexData;
