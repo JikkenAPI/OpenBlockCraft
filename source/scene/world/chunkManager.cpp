@@ -48,10 +48,13 @@ ChunkManager::ChunkManager()
 	// Create command queue
 	mCommandQueue = Jikken::createCommandQueue();
 
+	//grab immediate queue
+	Jikken::CommandQueue *immQueue = Jikken::getImmediateExecuteQueue();
 	// Create shader.
 	std::vector<Jikken::ShaderDetails> details;
-	details.push_back({ "Assets/chunkV.glsl", Jikken::ShaderStage::eVertex });
-	details.push_back({ "Assets/chunkF.glsl", Jikken::ShaderStage::eFragment });
+	//we assume the current working dir is the bin directory
+	details.push_back({ "../Assets/chunkV.glsl", Jikken::ShaderStage::eVertex });
+	details.push_back({ "../Assets/chunkF.glsl", Jikken::ShaderStage::eFragment });
 	mShader = Jikken::createShader(details);
 
 	// Create constant buffers
@@ -66,28 +69,28 @@ ChunkManager::ChunkManager()
 	allocCmd.dataSize = sizeof(glm::mat4) * 2;
 	allocCmd.data = nullptr;
 	allocCmd.hint = Jikken::BufferUsageHint::eDynamic;
-	mCommandQueue->addAllocBufferCommand(&allocCmd);
+	immQueue->addAllocBufferCommand(&allocCmd);
 
 	allocCmd.buffer = mNormalCBuffer;
 	allocCmd.dataSize = sizeof(glm::vec4) * 6;
 	allocCmd.data = &sCubeFaceNormals[0][0];
 	allocCmd.hint = Jikken::BufferUsageHint::eStatic;
-	mCommandQueue->addAllocBufferCommand(&allocCmd);
+	immQueue->addAllocBufferCommand(&allocCmd);
 
 	allocCmd.buffer = mModelMatrixCBuffer;
 	allocCmd.dataSize = sizeof(glm::mat4);
 	allocCmd.data = nullptr;
 	allocCmd.hint = Jikken::BufferUsageHint::eDynamic;
-	mCommandQueue->addAllocBufferCommand(&allocCmd);
+	immQueue->addAllocBufferCommand(&allocCmd);
 
 	allocCmd.buffer = mSunCBuffer;
 	allocCmd.dataSize = sizeof(SunUBOData);
 	allocCmd.data = reinterpret_cast<void*>(&SunUBOData);
 	allocCmd.hint = Jikken::BufferUsageHint::eDynamic;
-	mCommandQueue->addAllocBufferCommand(&allocCmd);
+	immQueue->addAllocBufferCommand(&allocCmd);
 
-	//submit command buffer
-	Jikken::submitCommandQueue(mCommandQueue);
+	//execute the above commands
+	Jikken::executeImmediateQueue();
 
 	// Bind UBOs to shader
 	Jikken::bindConstantBuffer(mShader, mCameraCBuffer, "Camera", 0);
@@ -116,7 +119,6 @@ ChunkManager::~ChunkManager()
 	}
 
 	Jikken::deleteCommandQueue(mCommandQueue);
-
 	Jikken::deleteBuffer(mCameraCBuffer);
 	Jikken::deleteBuffer(mNormalCBuffer);
 	Jikken::deleteBuffer(mModelMatrixCBuffer);
@@ -164,18 +166,24 @@ void ChunkManager::render(const glm::mat4 &viewMatrix, const glm::mat4 &projMatr
 		// Perform frustrum culling first. If it is inside the frustrum, go ahead and render it.
 		if (mFrustrum.checkCubeFAST(midPoint, size))
 		{
-			glm::mat4 model(1.0f);
-			model = glm::translate(model, chunk->getPosition());
+			//does this chunk even need rendering? - maybe do this before frustum culling
+			if (chunk->needRender(pass))
+			{
+				glm::mat4 model(1.0f);
+				model = glm::translate(model, chunk->getPosition());
 
-			// update model matrix ubo
-			mUpdateModelBufferCmd.data = &model[0][0];
-			mCommandQueue->addUpdateBufferCommand(&mUpdateModelBufferCmd);
+				// update model matrix ubo
+				mUpdateModelBufferCmd.data = &model[0][0];
+				mCommandQueue->addUpdateBufferCommand(&mUpdateModelBufferCmd);
 
-			chunk->render(mCommandQueue, pass, dt);
+				chunk->render(mCommandQueue, pass, dt);
+			}
 		}
 	}
+}
 
-	// submit command queue
+void ChunkManager::submitCommandQueue()
+{
 	Jikken::submitCommandQueue(mCommandQueue);
 }
 

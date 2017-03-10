@@ -61,7 +61,8 @@ Chunk::Chunk()
 	layouts.push_back(position);
 	mLayout = Jikken::createVertexInputLayout(layouts);
 
-	mUpdateTerrainComamandQueue = Jikken::createCommandQueue();
+	//don't delete this, we don't own it
+	mUpdateTerrainComamandQueue = Jikken::getImmediateExecuteQueue();
 
 	// we have 2 passes. rip me.
 	for (int i = 0; i < 2; i++)
@@ -85,15 +86,13 @@ Chunk::~Chunk()
 		mBlocks = nullptr;
 	}
 
-	// free GL objects.
+	// free objects.
 	for (int i = 0; i < 2; i++)
 	{
 		Jikken::deleteBuffer(mRenderData[i].mVBO);
 		Jikken::deleteBuffer(mRenderData[i].mIBO);
 		Jikken::deleteVAO(mRenderData[i].mVAO);
 	}
-
-	Jikken::deleteCommandQueue(mUpdateTerrainComamandQueue);
 }
 
 void Chunk::genTerrain()
@@ -311,35 +310,43 @@ void Chunk::updateTerrain()
 {
 	for (int i = 0; i < 2; i++)
 	{
-		mRenderData[i].mVboAllocCmd.dataSize = mRenderData[i].mVisibleMesh.size() * sizeof(CubeVert);
-		mRenderData[i].mVboAllocCmd.data = mRenderData[i].mVisibleMesh.data();
-		mRenderData[i].mVboAllocCmd.buffer = mRenderData[i].mVBO;
-		mRenderData[i].mVboAllocCmd.hint = Jikken::BufferUsageHint::eImmutable;
+		const size_t vertDataSize = mRenderData[i].mVisibleMesh.size() * sizeof(CubeVert);
+		const size_t indexDataSize = mRenderData[i].mIndexData.size() * sizeof(uint16_t);
 
-		mRenderData[i].mIboAllocCmd.dataSize = mRenderData[i].mIndexData.size() * sizeof(uint16_t);
-		mRenderData[i].mIboAllocCmd.data = mRenderData[i].mIndexData.data();
-		mRenderData[i].mIboAllocCmd.buffer = mRenderData[i].mIBO;
-		mRenderData[i].mIboAllocCmd.hint = Jikken::BufferUsageHint::eImmutable;
-
-		if(mRenderData[i].mVboAllocCmd.dataSize)
+		if (vertDataSize)
+		{
+			mRenderData[i].mVboAllocCmd.dataSize = vertDataSize;
+			mRenderData[i].mVboAllocCmd.data = mRenderData[i].mVisibleMesh.data();
+			mRenderData[i].mVboAllocCmd.buffer = mRenderData[i].mVBO;
+			mRenderData[i].mVboAllocCmd.hint = Jikken::BufferUsageHint::eImmutable;
 			mUpdateTerrainComamandQueue->addAllocBufferCommand(&mRenderData[i].mVboAllocCmd);
+		}
 
-		if(mRenderData[i].mIboAllocCmd.dataSize)
+		if (indexDataSize)
+		{
+			mRenderData[i].mIboAllocCmd.dataSize = indexDataSize;
+			mRenderData[i].mIboAllocCmd.data = mRenderData[i].mIndexData.data();
+			mRenderData[i].mIboAllocCmd.buffer = mRenderData[i].mIBO;
+			mRenderData[i].mIboAllocCmd.hint = Jikken::BufferUsageHint::eImmutable;
 			mUpdateTerrainComamandQueue->addAllocBufferCommand(&mRenderData[i].mIboAllocCmd);
+		}
 	}
 
-	Jikken::submitCommandQueue(mUpdateTerrainComamandQueue);
+	Jikken::executeImmediateQueue();
+}
+
+bool Chunk::needRender(RenderPass pass)
+{
+	int renderPass = (pass == RenderPass::eGEOMETRY) ? 0 : 1;
+	if (mRenderData[renderPass].mIndexData.size() == 0 || mRenderData[renderPass].mVisibleMesh.size() == 0)
+		return false;
+
+	return true;
 }
 
 void Chunk::render(Jikken::CommandQueue *cmdQueue, RenderPass pass, const double &dt)
 {
 	int renderPass = (pass == RenderPass::eGEOMETRY) ? 0 : 1;
-	if (mRenderData[renderPass].mIndexData.size() == 0)
-	{
-		//printf("pass %d has 0 data! We can save from rendering this!\n");
-		return;
-	}
-
 	// Bind VAO
 	mBindVaoCmd.vertexArray = mRenderData[renderPass].mVAO;
 	cmdQueue->addBindVAOCommand(&mBindVaoCmd);

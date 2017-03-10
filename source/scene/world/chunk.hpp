@@ -41,6 +41,8 @@ public:
 
 	void render(Jikken::CommandQueue *cmdQueue, RenderPass pass, const double &dt);
 
+	bool needRender(RenderPass pass);
+
 protected:
 	// This will allocate a page of memory that is 16x256x16 Block
 	Block *mBlocks;

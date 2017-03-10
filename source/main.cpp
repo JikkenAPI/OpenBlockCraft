@@ -57,12 +57,12 @@ void init()
 	blendCmd.dest = Jikken::BlendState::eOneMinusSrcAlpha;
 
 	//record commands
-	queue->addDepthStencilStateCommand(&depthCmd);
-	queue->addCullStateCommand(&cullCmd);
-	queue->addBlendStateCommand(&blendCmd);
+	Jikken::CommandQueue *immQueue = Jikken::getImmediateExecuteQueue();
+	immQueue->addDepthStencilStateCommand(&depthCmd);
+	immQueue->addCullStateCommand(&cullCmd);
+	immQueue->addBlendStateCommand(&blendCmd);
+	Jikken::executeImmediateQueue();
 
-	//submit queue
-	Jikken::submitCommandQueue(queue);
 
 	beginFrameCmd.clearFlag = Jikken::ClearBufferFlags::eColor | Jikken::ClearBufferFlags::eDepth;
 	const float clearColor[4] = { 0.329412f, 0.329412f, 0.329412f, 1.0f };
@@ -82,8 +82,11 @@ void render(Camera *camera, double dt)
 	glm::mat4 proj = proj = glm::perspective(90.0f, 1440.0f / 900.0f, 0.1f, 500.0f);
 
 	// Geometry pass first, then translucent.
+	//todo - multithread this and have seperate queue for each pass and process eGEOMETRY & eTRANSLUCENT on different threads
 	chunkManager->render(view, proj, RenderPass::eGEOMETRY, dt);
 	chunkManager->render(view, proj, RenderPass::eTRANSLUCENT, dt);
+	//we share the command queue between passes so we submit when all passes are complete
+	chunkManager->submitCommandQueue();
 }
 
 void createChunks()
@@ -201,7 +204,9 @@ int main(int argc, const char **argv)
 
 		render(camera, timer->getDelta());
 
-		Jikken::presentFrame();
+		//execute the lot and present to screen
+		Jikken::execute(true);
+
 		timer->stop();
 	}
 

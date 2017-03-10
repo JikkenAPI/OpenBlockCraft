@@ -33,6 +33,8 @@ public:
 	void createChunkAtPosition(const glm::vec3 &pos);
 
 	void render(const glm::mat4 &viewMatrix, const glm::mat4 &projMatrix, RenderPass pass, const double &dt);
+	//we done rendering all the passes now, submit the queue
+	void submitCommandQueue();
 
 	const std::vector<Chunk*>& getChunks() const;
 
