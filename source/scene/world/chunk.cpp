@@ -70,14 +70,14 @@ Chunk::Chunk()
 
 		mRenderData[i].mVBO = Jikken::createBuffer(
 			Jikken::BufferType::eVertexBuffer,
-			Jikken::BufferUsageHint::eStaticDraw,
+			Jikken::BufferUsageHint::eStatic,
 			0,
 			nullptr
 		);
 
 		mRenderData[i].mIBO = Jikken::createBuffer(
 			Jikken::BufferType::eIndexBuffer,
-			Jikken::BufferUsageHint::eStaticDraw,
+			Jikken::BufferUsageHint::eStatic,
 			0,
 			nullptr
 		);
@@ -88,13 +88,13 @@ Chunk::Chunk()
 		mRenderData[i].mVboReallocCmd.data = nullptr;
 		mRenderData[i].mVboReallocCmd.buffer = mRenderData[i].mVBO;
 		mRenderData[i].mVboReallocCmd.stride = sizeof(CubeVert);
-		mRenderData[i].mVboReallocCmd.hint = Jikken::BufferUsageHint::eStaticDraw;
+		mRenderData[i].mVboReallocCmd.hint = Jikken::BufferUsageHint::eStatic;
 
 		mRenderData[i].mIboReallocCmd.count = 0;
 		mRenderData[i].mIboReallocCmd.data = nullptr;
 		mRenderData[i].mIboReallocCmd.buffer = mRenderData[i].mIBO;
 		mRenderData[i].mIboReallocCmd.stride = sizeof(uint16_t);
-		mRenderData[i].mIboReallocCmd.hint = Jikken::BufferUsageHint::eStaticDraw;
+		mRenderData[i].mIboReallocCmd.hint = Jikken::BufferUsageHint::eStatic;
 	}
 
 	mDrawCmd.primitive = Jikken::PrimitiveType::eTriangles;

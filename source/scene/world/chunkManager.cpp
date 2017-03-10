@@ -53,25 +53,25 @@ ChunkManager::ChunkManager()
 	// Create constant buffers
 	mCameraCBuffer = Jikken::createBuffer(
 		Jikken::BufferType::eConstantBuffer,
-		Jikken::BufferUsageHint::eDynamicDraw,
+		Jikken::BufferUsageHint::eDynamic,
 		sizeof(glm::mat4) * 2,
 		nullptr
 	);
 	mNormalCBuffer = Jikken::createBuffer(
 		Jikken::BufferType::eConstantBuffer,
-		Jikken::BufferUsageHint::eStaticDraw,
+		Jikken::BufferUsageHint::eStatic,
 		sizeof(glm::vec4) * 6,
 		&sCubeFaceNormals[0][0]
 	);
 	mModelMatrixCBuffer = Jikken::createBuffer(
 		Jikken::BufferType::eConstantBuffer,
-		Jikken::BufferUsageHint::eDynamicDraw,
+		Jikken::BufferUsageHint::eDynamic,
 		sizeof(glm::mat4),
 		nullptr
 	);
 	mSunCBuffer = Jikken::createBuffer(
 		Jikken::BufferType::eConstantBuffer,
-		Jikken::BufferUsageHint::eStaticDraw,
+		Jikken::BufferUsageHint::eStatic,
 		sizeof(SunUBOData),
 		reinterpret_cast<float*>(&SunUBOData)
 	);
