@@ -110,6 +110,11 @@ ChunkManager::ChunkManager()
 
 ChunkManager::~ChunkManager()
 {
+	for (auto chunk : mChunks)
+	{
+		delete chunk;
+	}
+
 	Jikken::deleteCommandQueue(mCommandQueue);
 
 	Jikken::deleteBuffer(mCameraCBuffer);

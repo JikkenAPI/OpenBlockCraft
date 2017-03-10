@@ -37,7 +37,7 @@ public:
 
 	void genTerrain();
 	void genVisibleGeometry();
-	void updateTerrainGL();
+	void updateTerrain();
 
 	void render(Jikken::CommandQueue *cmdQueue, RenderPass pass, const double &dt);
 

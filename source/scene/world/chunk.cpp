@@ -307,7 +307,7 @@ void Chunk::_addFace(int pass, Block &block, const glm::vec3 &pos, const CubeSid
 	mRenderData[pass].mCurrentIndex += 4;
 }
 
-void Chunk::updateTerrainGL()
+void Chunk::updateTerrain()
 {
 	for (int i = 0; i < 2; i++)
 	{
@@ -321,8 +321,11 @@ void Chunk::updateTerrainGL()
 		mRenderData[i].mIboAllocCmd.buffer = mRenderData[i].mIBO;
 		mRenderData[i].mIboAllocCmd.hint = Jikken::BufferUsageHint::eImmutable;
 
-		mUpdateTerrainComamandQueue->addAllocBufferCommand(&mRenderData[i].mVboAllocCmd);
-		mUpdateTerrainComamandQueue->addAllocBufferCommand(&mRenderData[i].mIboAllocCmd);
+		if(mRenderData[i].mVboAllocCmd.dataSize)
+			mUpdateTerrainComamandQueue->addAllocBufferCommand(&mRenderData[i].mVboAllocCmd);
+
+		if(mRenderData[i].mIboAllocCmd.dataSize)
+			mUpdateTerrainComamandQueue->addAllocBufferCommand(&mRenderData[i].mIboAllocCmd);
 	}
 
 	Jikken::submitCommandQueue(mUpdateTerrainComamandQueue);

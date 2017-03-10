@@ -134,10 +134,10 @@ void createChunks()
 		delete thr;
 	}
 
-	// upload to GL
+	// upload to Jikken
 	for (Chunk *c : chunks)
 	{
-		c->updateTerrainGL();
+		c->updateTerrain();
 	}
 }
 
